@@ -1,9 +1,6 @@
 package httpexpect
 
 import (
-	"errors"
-	"fmt"
-	"math"
 	"math/big"
 )
 
@@ -22,9 +19,7 @@ type Number struct {
 // Example:
 //
 //	number := NewNumber(t, 123.4)
-func NewNumber(reporter Reporter, value float64) *Number {
-	return newNumber(newChainWithDefaults("Number()", reporter), value)
-}
+func NewNumber(reporter Reporter, value float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // NewNumberC returns a new Number instance with config.
 //
@@ -33,13 +28,9 @@ func NewNumber(reporter Reporter, value float64) *Number {
 // Example:
 //
 //	number := NewNumberC(config, 123.4)
-func NewNumberC(config Config, value float64) *Number {
-	return newNumber(newChainWithConfig("Number()", config.withDefaults()), value)
-}
+func NewNumberC(config Config, value float64) *Number { _ = "STUB: not implemented"; return nil }
 
-func newNumber(parent *chain, val float64) *Number {
-	return &Number{chain: parent.clone(), value: val}
-}
+func newNumber(parent *chain, val float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // Raw returns underlying value attached to Number.
 // This is the value originally passed to NewNumber.
@@ -49,60 +40,35 @@ func newNumber(parent *chain, val float64) *Number {
 //	number := NewNumber(t, 123.4)
 //	assert.Equal(t, 123.4, number.Raw())
 func (n *Number) Raw() float64 {
-	return n.value
+	_ = "STUB: not implemented"
+
+	// Decode unmarshals the underlying value attached to the Number to a target variable.
+	// target should be one of these:
+	//
+	//   - pointer to an empty interface
+	//   - pointer to any integer or floating type
+	//
+	// Example:
+	//
+	//	value := NewNumber(t, 123)
+	//
+	//	var target interface{}
+	//	valude.decode(&target)
+	//
+	//	assert.Equal(t, 123, target)
+	return 0
 }
 
-// Decode unmarshals the underlying value attached to the Number to a target variable.
-// target should be one of these:
-//
-//   - pointer to an empty interface
-//   - pointer to any integer or floating type
-//
-// Example:
-//
-//	value := NewNumber(t, 123)
-//
-//	var target interface{}
-//	valude.decode(&target)
-//
-//	assert.Equal(t, 123, target)
-func (n *Number) Decode(target interface{}) *Number {
-	opChain := n.chain.enter("Decode()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	canonDecode(opChain, n.value, target)
-	return n
-}
+func (n *Number) Decode(target interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Alias is similar to Value.Alias.
-func (n *Number) Alias(name string) *Number {
-	opChain := n.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	n.chain.setAlias(name)
-	return n
-}
+func (n *Number) Alias(name string) *Number { _ = "STUB: not implemented"; return nil }
 
 // Path is similar to Value.Path.
-func (n *Number) Path(path string) *Value {
-	opChain := n.chain.enter("Path(%q)", path)
-	defer opChain.leave()
-
-	return jsonPath(opChain, n.value, path)
-}
+func (n *Number) Path(path string) *Value { _ = "STUB: not implemented"; return nil }
 
 // Schema is similar to Value.Schema.
-func (n *Number) Schema(schema interface{}) *Number {
-	opChain := n.chain.enter("Schema()")
-	defer opChain.leave()
-
-	jsonSchema(opChain, n.value, schema)
-	return n
-}
+func (n *Number) Schema(schema interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsEqual succeeds if number is equal to given value.
 //
@@ -114,32 +80,7 @@ func (n *Number) Schema(schema interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.IsEqual(float64(123))
 //	number.IsEqual(int32(123))
-func (n *Number) IsEqual(value interface{}) *Number {
-	opChain := n.chain.enter("IsEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if !(n.value == num) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: numbers are equal"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) IsEqual(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // NotEqual succeeds if number is not equal to given value.
 //
@@ -151,37 +92,10 @@ func (n *Number) IsEqual(value interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.NotEqual(float64(321))
 //	number.NotEqual(int32(321))
-func (n *Number) NotEqual(value interface{}) *Number {
-	opChain := n.chain.enter("NotEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if n.value == num {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: numbers are non-equal"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) NotEqual(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsEqual instead.
-func (n *Number) Equal(value interface{}) *Number {
-	return n.IsEqual(value)
-}
+func (n *Number) Equal(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // InDelta succeeds if two numerals are within delta of each other.
 //
@@ -189,54 +103,7 @@ func (n *Number) Equal(value interface{}) *Number {
 //
 //	number := NewNumber(t, 123.0)
 //	number.InDelta(123.2, 0.3)
-func (n *Number) InDelta(value, delta float64) *Number {
-	opChain := n.chain.enter("InDelta()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if math.IsNaN(delta) {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected NaN delta argument"),
-			},
-		})
-		return n
-	}
-
-	if math.IsNaN(n.value) || math.IsNaN(value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{delta},
-			Errors: []error{
-				errors.New("expected: numbers are comparable"),
-			},
-		})
-		return n
-	}
-
-	diff := n.value - value
-
-	if diff < -delta || diff > delta {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{delta},
-			Errors: []error{
-				errors.New("expected: numbers lie within delta"),
-			},
-		})
-		return n
-	}
-
-	return n
-}
+func (n *Number) InDelta(value, delta float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // NotInDelta succeeds if two numerals are not within delta of each other.
 //
@@ -244,64 +111,13 @@ func (n *Number) InDelta(value, delta float64) *Number {
 //
 //	number := NewNumber(t, 123.0)
 //	number.NotInDelta(123.2, 0.1)
-func (n *Number) NotInDelta(value, delta float64) *Number {
-	opChain := n.chain.enter("NotInDelta()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if math.IsNaN(delta) {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected NaN delta argument"),
-			},
-		})
-		return n
-	}
-
-	if math.IsNaN(n.value) || math.IsNaN(value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{delta},
-			Errors: []error{
-				errors.New("expected: numbers are comparable"),
-			},
-		})
-		return n
-	}
-
-	diff := n.value - value
-
-	if !(diff < -delta || diff > delta) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{delta},
-			Errors: []error{
-				errors.New("expected: numbers do not lie within delta"),
-			},
-		})
-		return n
-	}
-
-	return n
-}
+func (n *Number) NotInDelta(value, delta float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use InDelta instead.
-func (n *Number) EqualDelta(value, delta float64) *Number {
-	return n.InDelta(value, delta)
-}
+func (n *Number) EqualDelta(value, delta float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NotInDelta instead.
-func (n *Number) NotEqualDelta(value, delta float64) *Number {
-	return n.NotInDelta(value, delta)
-}
+func (n *Number) NotEqualDelta(value, delta float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // InDeltaRelative succeeds if two numbers are within relative delta of each other.
 //
@@ -319,106 +135,18 @@ func (n *Number) NotEqualDelta(value, delta float64) *Number {
 //	number := NewNumber(t, 123.0)
 //	number.InDeltaRelative(126.5, 0.03)
 func (n *Number) InDeltaRelative(value, delta float64) *Number {
-	opChain := n.chain.enter("InDeltaRelative()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if math.IsNaN(delta) || math.IsInf(delta, 0) {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected non-number delta argument: %v", delta),
-			},
-		})
-		return n
-	}
-
-	if delta < 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected negative delta argument: %v", delta),
-			},
-		})
-		return n
-	}
-
-	// Fail if any of the numbers is NaN with specific error message
-	anyNumIsNaN := math.IsNaN(n.value) || math.IsNaN(value)
-	if anyNumIsNaN {
-		var assertionErrors []error
-		assertionErrors = append(
-			assertionErrors,
-			errors.New("expected: can compare values with relative delta"),
-		)
-		if math.IsNaN(n.value) {
-			assertionErrors = append(
-				assertionErrors,
-				errors.New("actual value is NaN"),
-			)
-		}
-		if math.IsNaN(value) {
-			assertionErrors = append(
-				assertionErrors,
-				errors.New("expected value is NaN"),
-			)
-		}
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors:   assertionErrors,
-		})
-		return n
-	}
-
-	// Pass if number and value are +-Inf and equal,
-	// regardless if delta is 0 or positive number
-	sameInfNumCheck := math.IsInf(n.value, 0) && math.IsInf(value, 0) && value == n.value
-	if sameInfNumCheck {
-		return n
-	}
-
-	// Fail if number and value are +=Inf and unequal with specific error message
-	diffInfNumCheck := math.IsInf(n.value, 0) && math.IsInf(value, 0) && value != n.value
-	if diffInfNumCheck {
-		var assertionErrors []error
-		assertionErrors = append(
-			assertionErrors,
-			errors.New("expected: can compare values with relative delta"),
-			errors.New("actual value and expected value are opposite Infs"),
-		)
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors:   assertionErrors,
-		})
-		return n
-	}
-
-	// Normal comparison after filtering out all corner cases
-	deltaRelativeError := deltaRelativeErrorCheck(true, n.value, value, delta)
-	if deltaRelativeError {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors: []error{
-				errors.New("expected: numbers lie within relative delta"),
-			},
-		})
-		return n
-	}
-
-	return n
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Fail if any of the numbers is NaN with specific error message
+
+// Pass if number and value are +-Inf and equal,
+// regardless if delta is 0 or positive number
+
+// Fail if number and value are +=Inf and unequal with specific error message
+
+// Normal comparison after filtering out all corner cases
 
 // NotInDeltaRelative succeeds if two numbers aren't within relative delta of each other.
 //
@@ -436,102 +164,18 @@ func (n *Number) InDeltaRelative(value, delta float64) *Number {
 //	number := NewNumber(t, 123.0)
 //	number.NotInDeltaRelative(126.5, 0.01)
 func (n *Number) NotInDeltaRelative(value, delta float64) *Number {
-	opChain := n.chain.enter("NotInDeltaRelative()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if math.IsNaN(delta) || math.IsInf(delta, 0) {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected non-number delta argument: %v", delta),
-			},
-		})
-		return n
-	}
-
-	if delta < 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected negative delta argument: %v", delta),
-			},
-		})
-		return n
-	}
-
-	// Fail if any of the numbers is NaN with specific error message
-	anyNumIsNaN := math.IsNaN(n.value) || math.IsNaN(value)
-	if anyNumIsNaN {
-		var assertionErrors []error
-		assertionErrors = append(
-			assertionErrors,
-			errors.New("expected: can compare values with relative delta"),
-		)
-		if math.IsNaN(n.value) {
-			assertionErrors = append(
-				assertionErrors,
-				errors.New("actual value is NaN"),
-			)
-		}
-		if math.IsNaN(value) {
-			assertionErrors = append(
-				assertionErrors,
-				errors.New("expected value is NaN"),
-			)
-		}
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors:   assertionErrors,
-		})
-		return n
-	}
-
-	// Fail if number and value are +-Inf and equal,
-	// regardless if delta is 0 or positive number
-	sameInfNumCheck := math.IsInf(n.value, 0) && math.IsInf(value, 0) && value == n.value
-	if sameInfNumCheck {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors: []error{
-				errors.New("expected: numbers lie within relative delta"),
-			},
-		})
-		return n
-	}
-
-	// Pass if number and value are +=Inf and unequal
-	diffInfNumCheck := math.IsInf(n.value, 0) && math.IsInf(value, 0) && value != n.value
-	if diffInfNumCheck {
-		return n
-	}
-
-	// Normal comparison after filtering out all corner cases
-	deltaRelativeError := deltaRelativeErrorCheck(false, n.value, value, delta)
-	if deltaRelativeError {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{value},
-			Delta:    &AssertionValue{relativeDelta(delta)},
-			Errors: []error{
-				errors.New("expected: numbers lie within relative delta"),
-			},
-		})
-		return n
-	}
-
-	return n
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Fail if any of the numbers is NaN with specific error message
+
+// Fail if number and value are +-Inf and equal,
+// regardless if delta is 0 or positive number
+
+// Pass if number and value are +=Inf and unequal
+
+// Normal comparison after filtering out all corner cases
 
 // InRange succeeds if number is within given range [min; max].
 //
@@ -544,37 +188,7 @@ func (n *Number) NotInDeltaRelative(value, delta float64) *Number {
 //	number.InRange(float32(100), int32(200))  // success
 //	number.InRange(100, 200)                  // success
 //	number.InRange(123, 123)                  // success
-func (n *Number) InRange(min, max interface{}) *Number {
-	opChain := n.chain.enter("InRange()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	a, ok := canonNumber(opChain, min)
-	if !ok {
-		return n
-	}
-
-	b, ok := canonNumber(opChain, max)
-	if !ok {
-		return n
-	}
-
-	if !(n.value >= a && n.value <= b) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertInRange,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{AssertionRange{a, b}},
-			Errors: []error{
-				errors.New("expected: number is within given range"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) InRange(min, max interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // NotInRange succeeds if number is not within given range [min; max].
 //
@@ -586,37 +200,7 @@ func (n *Number) InRange(min, max interface{}) *Number {
 //	number := NewNumber(t, 100)
 //	number.NotInRange(0, 99)
 //	number.NotInRange(101, 200)
-func (n *Number) NotInRange(min, max interface{}) *Number {
-	opChain := n.chain.enter("NotInRange()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	a, ok := canonNumber(opChain, min)
-	if !ok {
-		return n
-	}
-
-	b, ok := canonNumber(opChain, max)
-	if !ok {
-		return n
-	}
-
-	if n.value >= a && n.value <= b {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotInRange,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{AssertionRange{a, b}},
-			Errors: []error{
-				errors.New("expected: number is not within given range"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) NotInRange(min, max interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // InList succeeds if the number is equal to one of the values from given list
 // of numbers. Before comparison, each value is converted to canonical form.
@@ -628,50 +212,9 @@ func (n *Number) NotInRange(min, max interface{}) *Number {
 //
 //	number := NewNumber(t, 123)
 //	number.InList(float64(123), int32(123))
-func (n *Number) InList(values ...interface{}) *Number {
-	opChain := n.chain.enter("IsList()")
-	defer opChain.leave()
+func (n *Number) InList(values ...interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
-	if opChain.failed() {
-		return n
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return n
-	}
-
-	var isListed bool
-	for _, v := range values {
-		num, ok := canonNumber(opChain, v)
-		if !ok {
-			return n
-		}
-
-		if n.value == num {
-			isListed = true
-			// continue loop to check that all values are correct
-		}
-	}
-
-	if !isListed {
-		opChain.fail(AssertionFailure{
-			Type:     AssertBelongs,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{AssertionList(values)},
-			Errors: []error{
-				errors.New("expected: number is equal to one of the values"),
-			},
-		})
-	}
-
-	return n
-}
+// continue loop to check that all values are correct
 
 // NotInList succeeds if the number is not equal to any of the values from given
 // list of numbers. Before comparison, each value is converted to canonical form.
@@ -683,45 +226,7 @@ func (n *Number) InList(values ...interface{}) *Number {
 //
 //	number := NewNumber(t, 123)
 //	number.NotInList(float64(456), int32(456))
-func (n *Number) NotInList(values ...interface{}) *Number {
-	opChain := n.chain.enter("NotInList()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return n
-	}
-
-	for _, v := range values {
-		num, ok := canonNumber(opChain, v)
-		if !ok {
-			return n
-		}
-
-		if n.value == num {
-			opChain.fail(AssertionFailure{
-				Type:     AssertNotBelongs,
-				Actual:   &AssertionValue{n.value},
-				Expected: &AssertionValue{AssertionList(values)},
-				Errors: []error{
-					errors.New("expected: number is not equal to any of the values"),
-				},
-			})
-			return n
-		}
-	}
-
-	return n
-}
+func (n *Number) NotInList(values ...interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsGt succeeds if number is greater than given value.
 //
@@ -733,32 +238,7 @@ func (n *Number) NotInList(values ...interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.IsGt(float64(122))
 //	number.IsGt(int32(122))
-func (n *Number) IsGt(value interface{}) *Number {
-	opChain := n.chain.enter("IsGt()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if !(n.value > num) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertGt,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: number is larger than given value"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) IsGt(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsGe succeeds if number is greater than or equal to given value.
 //
@@ -770,32 +250,7 @@ func (n *Number) IsGt(value interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.IsGe(float64(122))
 //	number.IsGe(int32(122))
-func (n *Number) IsGe(value interface{}) *Number {
-	opChain := n.chain.enter("IsGe()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if !(n.value >= num) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertGe,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: number is larger than or equal to given value"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) IsGe(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsLt succeeds if number is lesser than given value.
 //
@@ -807,32 +262,7 @@ func (n *Number) IsGe(value interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.IsLt(float64(124))
 //	number.IsLt(int32(124))
-func (n *Number) IsLt(value interface{}) *Number {
-	opChain := n.chain.enter("IsLt()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if !(n.value < num) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertLt,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: number is less than given value"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) IsLt(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsLe succeeds if number is lesser than or equal to given value.
 //
@@ -844,52 +274,19 @@ func (n *Number) IsLt(value interface{}) *Number {
 //	number := NewNumber(t, 123)
 //	number.IsLe(float64(124))
 //	number.IsLe(int32(124))
-func (n *Number) IsLe(value interface{}) *Number {
-	opChain := n.chain.enter("IsLe()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	num, ok := canonNumber(opChain, value)
-	if !ok {
-		return n
-	}
-
-	if !(n.value <= num) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertLe,
-			Actual:   &AssertionValue{n.value},
-			Expected: &AssertionValue{num},
-			Errors: []error{
-				errors.New("expected: number is less than or equal to given value"),
-			},
-		})
-	}
-
-	return n
-}
+func (n *Number) IsLe(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsGt instead.
-func (n *Number) Gt(value interface{}) *Number {
-	return n.IsGt(value)
-}
+func (n *Number) Gt(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsGe instead.
-func (n *Number) Ge(value interface{}) *Number {
-	return n.IsGe(value)
-}
+func (n *Number) Ge(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsLt instead.
-func (n *Number) Lt(value interface{}) *Number {
-	return n.IsLt(value)
-}
+func (n *Number) Lt(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsLe instead.
-func (n *Number) Le(value interface{}) *Number {
-	return n.IsLe(value)
-}
+func (n *Number) Le(value interface{}) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsInt succeeds if number is a signed integer of the specified bit width
 // as an optional argument.
@@ -911,84 +308,7 @@ func (n *Number) Le(value interface{}) *Number {
 //
 //	number := NewNumber(t, 0.5)
 //	number.IsInt()   // failure
-func (n *Number) IsInt(bits ...int) *Number {
-	opChain := n.chain.enter("IsInt()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if len(bits) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple bits arguments"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) == 1 && bits[0] <= 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected non-positive bits argument"),
-			},
-		})
-		return n
-	}
-
-	if math.IsNaN(n.value) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is signed integer"),
-			},
-		})
-		return n
-	}
-
-	inum, acc := big.NewFloat(n.value).Int(nil)
-	if !(acc == big.Exact) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is signed integer"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) > 0 {
-		bitSize := bits[0]
-
-		imax := new(big.Int)
-		imax.Lsh(big.NewInt(1), uint(bitSize-1))
-		imax.Sub(imax, big.NewInt(1))
-		imin := new(big.Int)
-		imin.Neg(imax)
-		imin.Sub(imin, big.NewInt(1))
-		if inum.Cmp(imin) < 0 || inum.Cmp(imax) > 0 {
-			opChain.fail(AssertionFailure{
-				Type:   AssertInRange,
-				Actual: &AssertionValue{n.value},
-				Expected: &AssertionValue{AssertionRange{
-					Min: intBoundary{imin, -1, bitSize - 1},
-					Max: intBoundary{imax, +1, bitSize - 1},
-				}},
-				Errors: []error{
-					fmt.Errorf("expected: number is %d-bit signed integer", bitSize),
-				},
-			})
-			return n
-		}
-	}
-
-	return n
-}
+func (n *Number) IsInt(bits ...int) *Number { _ = "STUB: not implemented"; return nil }
 
 // NotInt succeeds if number is not a signed integer of the specified bit
 // width as an optional argument.
@@ -1010,76 +330,7 @@ func (n *Number) IsInt(bits ...int) *Number {
 //
 //	number := NewNumber(t, 0.5)
 //	number.NotInt()   // success
-func (n *Number) NotInt(bits ...int) *Number {
-	opChain := n.chain.enter("NotInt()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if len(bits) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple bits arguments"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) == 1 && bits[0] <= 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected non-positive bits argument"),
-			},
-		})
-		return n
-	}
-
-	if !math.IsNaN(n.value) {
-		inum, acc := big.NewFloat(n.value).Int(nil)
-		if acc == big.Exact {
-			if len(bits) == 0 {
-				opChain.fail(AssertionFailure{
-					Type:   AssertValid,
-					Actual: &AssertionValue{n.value},
-					Errors: []error{
-						errors.New("expected: number is not signed integer"),
-					},
-				})
-				return n
-			}
-
-			bitSize := bits[0]
-			imax := new(big.Int)
-			imax.Lsh(big.NewInt(1), uint(bitSize-1))
-			imax.Sub(imax, big.NewInt(1))
-			imin := new(big.Int)
-			imin.Neg(imax)
-			imin.Sub(imin, big.NewInt(1))
-			if !(inum.Cmp(imin) < 0 || inum.Cmp(imax) > 0) {
-				opChain.fail(AssertionFailure{
-					Type:   AssertNotInRange,
-					Actual: &AssertionValue{n.value},
-					Expected: &AssertionValue{AssertionRange{
-						Min: intBoundary{imin, -1, bitSize - 1},
-						Max: intBoundary{imax, +1, bitSize - 1},
-					}},
-					Errors: []error{
-						fmt.Errorf(
-							"expected: number doesn't fit %d-bit signed integer",
-							bitSize),
-					},
-				})
-				return n
-			}
-		}
-	}
-
-	return n
-}
+func (n *Number) NotInt(bits ...int) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsUint succeeds if number is an unsigned integer of the specified bit
 // width as an optional argument.
@@ -1101,92 +352,7 @@ func (n *Number) NotInt(bits ...int) *Number {
 //
 //	number := NewNumber(t, 0.5)
 //	number.IsUint()   // failure
-func (n *Number) IsUint(bits ...int) *Number {
-	opChain := n.chain.enter("IsUint()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if len(bits) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple bits arguments"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) == 1 && bits[0] <= 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected non-positive bits argument"),
-			},
-		})
-		return n
-	}
-
-	if math.IsNaN(n.value) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is unsigned integer"),
-			},
-		})
-		return n
-	}
-
-	inum, acc := big.NewFloat(n.value).Int(nil)
-	if !(acc == big.Exact) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is unsigned integer"),
-			},
-		})
-		return n
-	}
-
-	imin := big.NewInt(0)
-	if inum.Cmp(imin) < 0 {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is unsigned integer"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) > 0 {
-		bitSize := bits[0]
-		imax := new(big.Int)
-		imax.Lsh(big.NewInt(1), uint(bitSize))
-		imax.Sub(imax, big.NewInt(1))
-		if inum.Cmp(imax) > 0 {
-			opChain.fail(AssertionFailure{
-				Type:   AssertInRange,
-				Actual: &AssertionValue{n.value},
-				Expected: &AssertionValue{AssertionRange{
-					Min: intBoundary{imin, 0, 0},
-					Max: intBoundary{imax, +1, bitSize},
-				}},
-				Errors: []error{
-					fmt.Errorf("expected: number fits %d-bit unsigned integer", bitSize),
-				},
-			})
-			return n
-		}
-	}
-
-	return n
-}
+func (n *Number) IsUint(bits ...int) *Number { _ = "STUB: not implemented"; return nil }
 
 // NotUint succeeds if number is not an unsigned integer of the specified bit
 // width as an optional argument.
@@ -1208,76 +374,7 @@ func (n *Number) IsUint(bits ...int) *Number {
 //
 //	number := NewNumber(t, 0.5)
 //	number.NotUint()   // success
-func (n *Number) NotUint(bits ...int) *Number {
-	opChain := n.chain.enter("NotUint()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if len(bits) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple bits arguments"),
-			},
-		})
-		return n
-	}
-
-	if len(bits) == 1 && bits[0] <= 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected non-positive bits argument"),
-			},
-		})
-		return n
-	}
-
-	if !math.IsNaN(n.value) {
-		inum, acc := big.NewFloat(n.value).Int(nil)
-		if acc == big.Exact {
-			imin := big.NewInt(0)
-			if inum.Cmp(imin) >= 0 {
-				if len(bits) == 0 {
-					opChain.fail(AssertionFailure{
-						Type:   AssertValid,
-						Actual: &AssertionValue{n.value},
-						Errors: []error{
-							errors.New("expected: number is not unsigned integer"),
-						},
-					})
-					return n
-				}
-
-				bitSize := bits[0]
-				imax := new(big.Int)
-				imax.Lsh(big.NewInt(1), uint(bitSize))
-				imax.Sub(imax, big.NewInt(1))
-				if inum.Cmp(imax) <= 0 {
-					opChain.fail(AssertionFailure{
-						Type:   AssertNotInRange,
-						Actual: &AssertionValue{n.value},
-						Expected: &AssertionValue{AssertionRange{
-							Min: intBoundary{imin, 0, 0},
-							Max: intBoundary{imax, +1, bitSize},
-						}},
-						Errors: []error{
-							fmt.Errorf(
-								"expected: number doesn't fit %d-bit unsigned integer",
-								bitSize),
-						},
-					})
-					return n
-				}
-			}
-		}
-	}
-
-	return n
-}
+func (n *Number) NotUint(bits ...int) *Number { _ = "STUB: not implemented"; return nil }
 
 // IsFinite succeeds if number is neither ±Inf nor NaN.
 //
@@ -1291,27 +388,7 @@ func (n *Number) NotUint(bits ...int) *Number {
 //
 //	number := NewNumber(t, math.Inf(+1))
 //	number.IsFinite() // failure
-func (n *Number) IsFinite() *Number {
-	opChain := n.chain.enter("IsFinite()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if math.IsInf(n.value, 0) || math.IsNaN(n.value) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is neither ±Inf nor NaN"),
-			},
-		})
-		return n
-	}
-
-	return n
-}
+func (n *Number) IsFinite() *Number { _ = "STUB: not implemented"; return nil }
 
 // NotFinite succeeds if number is either ±Inf or NaN.
 //
@@ -1325,27 +402,7 @@ func (n *Number) IsFinite() *Number {
 //
 //	number := NewNumber(t, math.Inf(+1))
 //	number.NotFinite() // success
-func (n *Number) NotFinite() *Number {
-	opChain := n.chain.enter("NotFinite()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return n
-	}
-
-	if !(math.IsInf(n.value, 0) || math.IsNaN(n.value)) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{n.value},
-			Errors: []error{
-				errors.New("expected: number is either ±Inf or NaN"),
-			},
-		})
-		return n
-	}
-
-	return n
-}
+func (n *Number) NotFinite() *Number { _ = "STUB: not implemented"; return nil }
 
 type intBoundary struct {
 	val  *big.Int
@@ -1353,33 +410,13 @@ type intBoundary struct {
 	bits int
 }
 
-func (b intBoundary) String() string {
-	if b.sign > 0 {
-		return fmt.Sprintf("+2^%d-1 (+%s)", b.bits, b.val)
-	} else if b.sign < 0 {
-		return fmt.Sprintf("-2^%d   (%s)", b.bits, b.val)
-	}
-	return fmt.Sprintf("%s", b.val)
-}
+func (b intBoundary) String() string { _ = "STUB: not implemented"; return "" }
 
 type relativeDelta float64
 
-func (rd relativeDelta) String() string {
-	return fmt.Sprintf("%v (%.f%%)", float64(rd), rd*100)
-}
+func (rd relativeDelta) String() string { _ = "STUB: not implemented"; return "" }
 
 func deltaRelativeErrorCheck(inDeltaRelative bool, number, value, delta float64) bool {
-	if (number == 0 || math.IsInf(number, 0)) && value != number {
-		return true
-	}
-	if math.Abs(number-value)/math.Abs(number) > delta {
-		if inDeltaRelative {
-			return true
-		}
-	} else {
-		if !(inDeltaRelative) {
-			return true
-		}
-	}
+	_ = "STUB: not implemented"
 	return false
 }

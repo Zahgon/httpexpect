@@ -2,9 +2,6 @@ package httpexpect
 
 import (
 	"net/http"
-	"net/http/cookiejar"
-
-	"golang.org/x/net/publicsuffix"
 )
 
 // NewCookieJar returns a new http.CookieJar.
@@ -13,17 +10,7 @@ import (
 // implemented in golang.org/x/net/publicsuffix.
 //
 // Note that this jar ignores cookies when request url is empty.
-func NewCookieJar() http.CookieJar {
-	jar, err := cookiejar.New(&cookiejar.Options{
-		PublicSuffixList: publicsuffix.List,
-	})
-	if err != nil {
-		panic(err)
-	}
-	return jar
-}
+func NewCookieJar() http.CookieJar { _ = "STUB: not implemented"; return *new(http.CookieJar) }
 
 // Deprecated: use NewCookieJar instead.
-func NewJar() http.CookieJar {
-	return NewCookieJar()
-}
+func NewJar() http.CookieJar { _ = "STUB: not implemented"; return *new(http.CookieJar) }

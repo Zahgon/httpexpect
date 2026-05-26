@@ -3,27 +3,14 @@ package httpexpect
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
 	"mime/multipart"
-	"net"
 	"net/http"
 	"net/url"
-	"os"
-	"reflect"
-	"sort"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
-	"github.com/ajg/form"
-	"github.com/fatih/structs"
-	"github.com/google/go-querystring/query"
 	"github.com/gorilla/websocket"
-	"github.com/imkira/go-interpol"
 )
 
 // Request provides methods to incrementally build http.Request object,
@@ -70,7 +57,8 @@ type Request struct {
 
 // Deprecated: use NewRequestC instead.
 func NewRequest(config Config, method, path string, pathargs ...interface{}) *Request {
-	return NewRequestC(config, method, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewRequestC returns a new Request instance.
@@ -101,126 +89,26 @@ func NewRequest(config Config, method, path string, pathargs ...interface{}) *Re
 // separated by slash. If BaseURL ends with a slash and path (after interpolation)
 // starts with a slash, only single slash is inserted.
 func NewRequestC(config Config, method, path string, pathargs ...interface{}) *Request {
-	config = config.withDefaults()
-
-	return newRequest(
-		newChainWithConfig(fmt.Sprintf("Request(%q)", method), config),
-		config,
-		method,
-		path,
-		pathargs...,
-	)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func newRequest(
 	parent *chain, config Config, method, path string, pathargs ...interface{},
 ) *Request {
-	config.validate()
-
-	r := &Request{
-		config: config,
-		chain:  parent.clone(),
-
-		redirectPolicy: defaultRedirectPolicy,
-		maxRedirects:   -1,
-
-		retryPolicy:   defaultRetryPolicy,
-		retryPolicyFn: nil,
-		maxRetries:    0,
-		minRetryDelay: time.Millisecond * 50,
-		maxRetryDelay: time.Second * 5,
-		sleepFn: func(d time.Duration) <-chan time.Time {
-			return time.After(d)
-		},
-
-		query:        nil,
-		queryEncoder: defaultQueryEncoder,
-
-		multipartFn: func(w io.Writer) *multipart.Writer {
-			return multipart.NewWriter(w)
-		},
-	}
-
-	opChain := r.chain.enter("")
-	defer opChain.leave()
-
-	r.initPath(opChain, path, pathargs...)
-	r.initReq(opChain, method)
-
-	r.chain.setRequest(r)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *Request) initPath(opChain *chain, path string, pathargs ...interface{}) {
-	if len(pathargs) != 0 {
-		var n int
-
-		var err error
-		path, err = interpol.WithFunc(path, func(k string, w io.Writer) error {
-			if n < len(pathargs) {
-				if pathargs[n] == nil {
-					opChain.fail(AssertionFailure{
-						Type:   AssertValid,
-						Actual: &AssertionValue{pathargs},
-						Errors: []error{
-							fmt.Errorf("unexpected nil argument at index %d", n),
-						},
-					})
-				} else {
-					mustWrite(w, fmt.Sprint(pathargs[n]))
-				}
-			} else {
-				mustWrite(w, "{")
-				mustWrite(w, k)
-				mustWrite(w, "}")
-			}
-			n++
-			return nil
-		})
-
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{path},
-				Errors: []error{
-					errors.New("invalid interpol string"),
-					err,
-				},
-			})
-		}
-	}
-
-	r.path = path
+	_ = "STUB: not implemented"
+	return
 }
 
-func (r *Request) initReq(opChain *chain, method string) {
-	httpReq, err := r.config.RequestFactory.NewRequest(method, r.config.BaseURL, nil)
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				errors.New("failed to create http request"),
-				err,
-			},
-		})
-	}
-
-	r.httpReq = httpReq
-}
+func (r *Request) initReq(opChain *chain, method string) { _ = "STUB: not implemented"; return }
 
 // Alias is similar to Value.Alias.
-func (r *Request) Alias(name string) *Request {
-	opChain := r.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	r.chain.setAlias(name)
-	return r
-}
+func (r *Request) Alias(name string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithName sets convenient request name.
 // This name will be included in assertion reports for this request.
@@ -230,25 +118,7 @@ func (r *Request) Alias(name string) *Request {
 //
 //	req := NewRequestC(config, "POST", "/api/login")
 //	req.WithName("Login Request")
-func (r *Request) WithName(name string) *Request {
-	opChain := r.chain.enter("WithName()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithName()") {
-		return r
-	}
-
-	r.chain.setRequestName(name)
-
-	return r
-}
+func (r *Request) WithName(name string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithReporter sets reporter to be used for this request.
 //
@@ -261,39 +131,7 @@ func (r *Request) WithName(name string) *Request {
 //
 //	req := NewRequestC(config, "GET", "http://example.com/path")
 //	req.WithReporter(t)
-func (r *Request) WithReporter(reporter Reporter) *Request {
-	opChain := r.chain.enter("WithReporter()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithReporter()") {
-		return r
-	}
-
-	if reporter == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	handler := &DefaultAssertionHandler{
-		Reporter:  reporter,
-		Formatter: r.config.Formatter,
-	}
-	r.chain.setHandler(handler)
-
-	return r
-}
+func (r *Request) WithReporter(reporter Reporter) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithAssertionHandler sets assertion handler to be used for this request.
 //
@@ -309,33 +147,8 @@ func (r *Request) WithReporter(reporter Reporter) *Request {
 //		Formatter: formatter,
 //	})
 func (r *Request) WithAssertionHandler(handler AssertionHandler) *Request {
-	opChain := r.chain.enter("WithAssertionHandler()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithAssertionHandler()") {
-		return r
-	}
-
-	if handler == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.chain.setHandler(handler)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithMatcher attaches a matcher to the request.
@@ -349,32 +162,8 @@ func (r *Request) WithAssertionHandler(handler AssertionHandler) *Request {
 //		resp.Header("API-Version").NotEmpty()
 //	})
 func (r *Request) WithMatcher(matcher func(*Response)) *Request {
-	opChain := r.chain.enter("WithMatcher()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithMatcher()") {
-		return r
-	}
-
-	if matcher == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.matchers = append(r.matchers, matcher)
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithTransformer attaches a transform to the Request.
@@ -386,33 +175,8 @@ func (r *Request) WithMatcher(matcher func(*Response)) *Request {
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithTransformer(func(r *http.Request) { r.Header.Add("foo", "bar") })
 func (r *Request) WithTransformer(transformer func(*http.Request)) *Request {
-	opChain := r.chain.enter("WithTransformer()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithTransformer()") {
-		return r
-	}
-
-	if transformer == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.transformers = append(r.transformers, transformer)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithClient sets client.
@@ -428,35 +192,7 @@ func (r *Request) WithTransformer(transformer func(*http.Request)) *Request {
 //		DisableCompression: true,
 //	  },
 //	})
-func (r *Request) WithClient(client Client) *Request {
-	opChain := r.chain.enter("WithClient()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithClient()") {
-		return r
-	}
-
-	if client == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.config.Client = client
-
-	return r
-}
+func (r *Request) WithClient(client Client) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithHandler configures client to invoke the given handler directly.
 //
@@ -468,44 +204,7 @@ func (r *Request) WithClient(client Client) *Request {
 //
 //	req := NewRequestC(config, "GET", "/path")
 //	req.WithHandler(myServer.someHandler)
-func (r *Request) WithHandler(handler http.Handler) *Request {
-	opChain := r.chain.enter("WithHandler()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithHandler()") {
-		return r
-	}
-
-	if handler == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	if client, ok := r.config.Client.(*http.Client); ok {
-		clientCopy := *client
-		clientCopy.Transport = NewBinder(handler)
-		r.config.Client = &clientCopy
-	} else {
-		r.config.Client = &http.Client{
-			Transport: NewBinder(handler),
-			Jar:       NewCookieJar(),
-		}
-	}
-
-	return r
-}
+func (r *Request) WithHandler(handler http.Handler) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithContext sets the context.
 //
@@ -520,35 +219,7 @@ func (r *Request) WithHandler(handler http.Handler) *Request {
 //	req := NewRequestC(config, "GET", "/path")
 //	req.WithContext(ctx)
 //	req.Expect().Status(http.StatusOK)
-func (r *Request) WithContext(ctx context.Context) *Request {
-	opChain := r.chain.enter("WithContext()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithContext()") {
-		return r
-	}
-
-	if ctx == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.config.Context = ctx
-
-	return r
-}
+func (r *Request) WithContext(ctx context.Context) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithTimeout sets a timeout duration for the request.
 //
@@ -566,23 +237,8 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 //	req.WithTimeout(time.Duration(3)*time.Second)
 //	req.Expect().Status(http.StatusOK)
 func (r *Request) WithTimeout(timeout time.Duration) *Request {
-	opChain := r.chain.enter("WithTimeout()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithTimeout()") {
-		return r
-	}
-
-	r.timeout = timeout
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // RedirectPolicy defines how redirection responses are handled.
@@ -638,23 +294,8 @@ const (
 //	req2.WithRedirectPolicy(DontFollowRedirects)
 //	req2.Expect().Status(http.StatusPermanentRedirect)
 func (r *Request) WithRedirectPolicy(policy RedirectPolicy) *Request {
-	opChain := r.chain.enter("WithRedirectPolicy()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithRedirectPolicy()") {
-		return r
-	}
-
-	r.redirectPolicy = policy
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithMaxRedirects sets maximum number of redirects to follow.
@@ -673,34 +314,8 @@ func (r *Request) WithRedirectPolicy(policy RedirectPolicy) *Request {
 //	req1.WithMaxRedirects(1)
 //	req1.Expect().Status(http.StatusOK)
 func (r *Request) WithMaxRedirects(maxRedirects int) *Request {
-	opChain := r.chain.enter("WithMaxRedirects()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithMaxRedirects()") {
-		return r
-	}
-
-	if maxRedirects < 0 {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{maxRedirects},
-			Errors: []error{
-				errors.New("invalid negative argument"),
-			},
-		})
-		return r
-	}
-
-	r.maxRedirects = maxRedirects
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // RetryPolicy defines how failed requests are retried.
@@ -753,34 +368,8 @@ const (
 //	req.WithRetryPolicy(RetryAllErrors)
 //	req.Expect().Status(http.StatusOK)
 func (r *Request) WithRetryPolicy(policy RetryPolicy) *Request {
-	opChain := r.chain.enter("WithRetryPolicy()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithRetryPolicy()") {
-		return r
-	}
-
-	if r.retryPolicyFn != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected call:" +
-					" WithRetryPolicy() and WithRetryPolicyFunc() are mutually exclusive"),
-			},
-		})
-		return r
-	}
-
-	r.retryPolicy = policy
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithRetryPolicyFunc sets a function to replace built-in policies
@@ -798,34 +387,8 @@ func (r *Request) WithRetryPolicy(policy RetryPolicy) *Request {
 func (r *Request) WithRetryPolicyFunc(
 	fn func(res *http.Response, err error) bool,
 ) *Request {
-	opChain := r.chain.enter("WithRetryPolicyFunc()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithRetryPolicyFunc()") {
-		return r
-	}
-
-	if r.retryPolicy != defaultRetryPolicy {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected call:" +
-					" WithRetryPolicy() and WithRetryPolicyFunc() are mutually exclusive"),
-			},
-		})
-		return r
-	}
-
-	r.retryPolicyFn = fn
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithMaxRetries sets maximum number of retry attempts.
@@ -843,36 +406,7 @@ func (r *Request) WithRetryPolicyFunc(
 //	req := NewRequestC(config, "POST", "/path")
 //	req.WithMaxRetries(1)
 //	req.Expect().Status(http.StatusOK)
-func (r *Request) WithMaxRetries(maxRetries int) *Request {
-	opChain := r.chain.enter("WithMaxRetries()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithMaxRetries()") {
-		return r
-	}
-
-	if maxRetries < 0 {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{maxRetries},
-			Errors: []error{
-				errors.New("invalid negative argument"),
-			},
-		})
-		return r
-	}
-
-	r.maxRetries = maxRetries
-
-	return r
-}
+func (r *Request) WithMaxRetries(maxRetries int) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithRetryDelay sets minimum and maximum delay between retries.
 //
@@ -887,37 +421,8 @@ func (r *Request) WithMaxRetries(maxRetries int) *Request {
 //	req.WithRetryDelay(time.Second, time.Minute)
 //	req.Expect().Status(http.StatusOK)
 func (r *Request) WithRetryDelay(minDelay, maxDelay time.Duration) *Request {
-	opChain := r.chain.enter("WithRetryDelay()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithRetryDelay()") {
-		return r
-	}
-
-	if !(minDelay <= maxDelay) {
-		opChain.fail(AssertionFailure{
-			Type: AssertValid,
-			Actual: &AssertionValue{
-				[2]time.Duration{minDelay, maxDelay},
-			},
-			Errors: []error{
-				errors.New("invalid delay range"),
-			},
-		})
-		return r
-	}
-
-	r.minRetryDelay = minDelay
-	r.maxRetryDelay = maxDelay
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithWebsocketUpgrade enables upgrades the connection to websocket.
@@ -940,25 +445,7 @@ func (r *Request) WithRetryDelay(minDelay, maxDelay time.Duration) *Request {
 //	req.WithWebsocketUpgrade()
 //	ws := req.Expect().Status(http.StatusSwitchingProtocols).Websocket()
 //	defer ws.Disconnect()
-func (r *Request) WithWebsocketUpgrade() *Request {
-	opChain := r.chain.enter("WithWebsocketUpgrade()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithWebsocketUpgrade()") {
-		return r
-	}
-
-	r.wsUpgrade = true
-
-	return r
-}
+func (r *Request) WithWebsocketUpgrade() *Request { _ = "STUB: not implemented"; return nil }
 
 // WithWebsocketDialer sets the custom websocket dialer.
 //
@@ -975,33 +462,8 @@ func (r *Request) WithWebsocketUpgrade() *Request {
 //	ws := req.Expect().Status(http.StatusSwitchingProtocols).Websocket()
 //	defer ws.Disconnect()
 func (r *Request) WithWebsocketDialer(dialer WebsocketDialer) *Request {
-	opChain := r.chain.enter("WithWebsocketDialer()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithWebsocketDialer()") {
-		return r
-	}
-
-	if dialer == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	r.config.WebsocketDialer = dialer
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithPath substitutes named parameters in url path.
@@ -1018,23 +480,8 @@ func (r *Request) WithWebsocketDialer(dialer WebsocketDialer) *Request {
 //	req.WithPath("repo", "httpexpect")
 //	// path will be "/repos/gavv/httpexpect"
 func (r *Request) WithPath(key string, value interface{}) *Request {
-	opChain := r.chain.enter("WithPath()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithPath()") {
-		return r
-	}
-
-	r.withPath(opChain, key, value)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithPathObject substitutes multiple named parameters in url path.
@@ -1064,99 +511,13 @@ func (r *Request) WithPath(key string, value interface{}) *Request {
 //	req.WithPathObject(map[string]string{"user": "gavv", "repo": "httpexpect"})
 //	// path will be "/repos/gavv/httpexpect"
 func (r *Request) WithPathObject(object interface{}) *Request {
-	opChain := r.chain.enter("WithPathObject()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithPathObject()") {
-		return r
-	}
-
-	if object == nil {
-		return r
-	}
-
-	var (
-		m  map[string]interface{}
-		ok bool
-	)
-	if reflect.Indirect(reflect.ValueOf(object)).Kind() == reflect.Struct {
-		s := structs.New(object)
-		s.TagName = "path"
-		m = s.Map()
-	} else {
-		m, ok = canonMap(opChain, object)
-		if !ok {
-			return r
-		}
-	}
-
-	for key, value := range m {
-		r.withPath(opChain, key, value)
-	}
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *Request) withPath(opChain *chain, key string, value interface{}) {
-	found := false
-
-	path, err := interpol.WithFunc(r.path, func(k string, w io.Writer) error {
-		if strings.EqualFold(k, key) {
-			if value == nil {
-				opChain.fail(AssertionFailure{
-					Type: AssertUsage,
-					Errors: []error{
-						fmt.Errorf("unexpected nil interpol argument %q", k),
-					},
-				})
-			} else {
-				switch value.(type) {
-				case float64, float32:
-					v := value.(float64)
-					mustWrite(w, strconv.FormatFloat(v, 'f', -1, 64))
-				default:
-					mustWrite(w, fmt.Sprint(value))
-				}
-				found = true
-			}
-		} else {
-			mustWrite(w, "{")
-			mustWrite(w, k)
-			mustWrite(w, "}")
-		}
-		return nil
-	})
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{path},
-			Errors: []error{
-				errors.New("invalid interpol string"),
-				err,
-			},
-		})
-		return
-	}
-
-	if !found {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("key %q not found in interpol string", key),
-			},
-		})
-		return
-	}
-
-	r.path = path
+	_ = "STUB: not implemented"
+	return
 }
 
 // WithQuery adds query parameter to request URL.
@@ -1170,36 +531,8 @@ func (r *Request) withPath(opChain *chain, key string, value interface{}) {
 //	req.WithQuery("b", "foo")
 //	// URL is now http://example.com/path?a=123&b=foo
 func (r *Request) WithQuery(key string, value interface{}) *Request {
-	opChain := r.chain.enter("WithQuery()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithQuery()") {
-		return r
-	}
-
-	if value == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected nil argument"),
-			},
-		})
-		return r
-	}
-
-	if r.query == nil {
-		r.query = make(url.Values)
-	}
-	r.query.Add(key, fmt.Sprint(value))
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithQueryObject adds multiple query parameters to request URL.
@@ -1228,99 +561,11 @@ func (r *Request) WithQuery(key string, value interface{}) *Request {
 //	req.WithQueryObject(map[string]interface{}{"a": 123, "b": "foo"})
 //	// URL is now http://example.com/path?a=123&b=foo
 func (r *Request) WithQueryObject(object interface{}) *Request {
-	opChain := r.chain.enter("WithQueryObject()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithQueryObject()") {
-		return r
-	}
-
-	if object == nil {
-		return r
-	}
-
-	var (
-		q   url.Values
-		err error
-	)
-
-	encoder := r.queryEncoder
-	if encoder == defaultQueryEncoder {
-		encoder = selectQueryEncoder(object)
-	}
-
-	switch encoder {
-	case defaultQueryEncoder:
-		// can't happen
-
-	case QueryEncoderGoogle:
-		q, err = query.Values(object)
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{object},
-				Errors: []error{
-					errors.New("invalid query object"),
-					errors.New("google/go-querystring encoding failed"),
-					err,
-				},
-			})
-			return r
-		}
-
-	case QueryEncoderForm, QueryEncoderFormKeepZeros:
-		var b bytes.Buffer
-		enc := form.NewEncoder(&b)
-
-		if encoder == QueryEncoderFormKeepZeros {
-			enc.KeepZeros(true)
-		}
-
-		err = enc.Encode(object)
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{object},
-				Errors: []error{
-					errors.New("invalid query object"),
-					errors.New("ajg/form encoding failed"),
-					err,
-				},
-			})
-			return r
-		}
-
-		q, err = url.ParseQuery(b.String())
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{object},
-				Errors: []error{
-					errors.New("invalid query object"),
-					errors.New("ajg/form produced malformed query"),
-					err,
-				},
-			})
-			return r
-		}
-	}
-
-	if r.query == nil {
-		r.query = make(url.Values)
-	}
-	for k, v := range q {
-		r.query[k] = append(r.query[k], v...)
-	}
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// can't happen
 
 // QueryEncoder defines how to encode object into query in WithQueryObject().
 // If not set, appropriate encoder is selected automatically:
@@ -1375,36 +620,18 @@ const (
 //	req.WithQueryObject(map[string]interface{}{"a": 0, "b": 0})
 //	// URL is now http://example.com/path?a=0&b=0
 func (r *Request) WithQueryEncoder(encoder QueryEncoder) *Request {
-	opChain := r.chain.enter("WithQueryEncoder()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithQueryEncoder()") {
-		return r
-	}
-
-	r.queryEncoder = encoder
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func selectQueryEncoder(object interface{}) QueryEncoder {
-	value := reflect.Indirect(reflect.ValueOf(object))
-
-	if value.Kind() == reflect.Struct {
-		// Use google/go-querystring.
-		return QueryEncoderGoogle
-	}
-
-	// Use ajg/form.
-	return QueryEncoderForm
+	_ = "STUB: not implemented"
+	return *new(QueryEncoder)
 }
+
+// Use google/go-querystring.
+
+// Use ajg/form.
 
 // WithQueryString parses given query string and adds it to request URL.
 //
@@ -1414,44 +641,7 @@ func selectQueryEncoder(object interface{}) QueryEncoder {
 //	req.WithQuery("a", 11)
 //	req.WithQueryString("b=22&c=33")
 //	// URL is now http://example.com/path?a=11&bb=22&c=33
-func (r *Request) WithQueryString(query string) *Request {
-	opChain := r.chain.enter("WithQueryString()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithQueryString()") {
-		return r
-	}
-
-	v, err := url.ParseQuery(query)
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{query},
-			Errors: []error{
-				errors.New("invalid query string"),
-				err,
-			},
-		})
-		return r
-	}
-
-	if r.query == nil {
-		r.query = make(url.Values)
-	}
-	for k, v := range v {
-		r.query[k] = append(r.query[k], v...)
-	}
-
-	return r
-}
+func (r *Request) WithQueryString(query string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithURL sets request URL.
 //
@@ -1463,38 +653,7 @@ func (r *Request) WithQueryString(query string) *Request {
 //	req := NewRequestC(config, "PUT", "/path")
 //	req.WithURL("http://example.com")
 //	// URL is now http://example.com/path
-func (r *Request) WithURL(urlStr string) *Request {
-	opChain := r.chain.enter("WithURL()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithURL()") {
-		return r
-	}
-
-	u, err := url.Parse(urlStr)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{urlStr},
-			Errors: []error{
-				errors.New("invalid url string"),
-				err,
-			},
-		})
-		return r
-	}
-
-	r.httpReq.URL = u
-
-	return r
-}
+func (r *Request) WithURL(urlStr string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithHeaders adds given headers to request.
 //
@@ -1505,25 +664,8 @@ func (r *Request) WithURL(urlStr string) *Request {
 //		"Content-Type": "application/json",
 //	})
 func (r *Request) WithHeaders(headers map[string]string) *Request {
-	opChain := r.chain.enter("WithHeaders()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithHeaders()") {
-		return r
-	}
-
-	for k, v := range headers {
-		r.withHeader(k, v)
-	}
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithHeader adds given single header to request.
@@ -1532,43 +674,9 @@ func (r *Request) WithHeaders(headers map[string]string) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithHeader("Content-Type", "application/json")
-func (r *Request) WithHeader(k, v string) *Request {
-	opChain := r.chain.enter("WithHeader()")
-	defer opChain.leave()
+func (r *Request) WithHeader(k, v string) *Request { _ = "STUB: not implemented"; return nil }
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithHeader()") {
-		return r
-	}
-
-	r.withHeader(k, v)
-
-	return r
-}
-
-func (r *Request) withHeader(k, v string) {
-	switch http.CanonicalHeaderKey(k) {
-	case "Host":
-		r.httpReq.Host = v
-
-	case "Content-Type":
-		if !r.forceType {
-			delete(r.httpReq.Header, "Content-Type")
-		}
-		r.forceType = true
-		r.typeSetter = "WithHeader()"
-		r.httpReq.Header.Add(k, v)
-
-	default:
-		r.httpReq.Header.Add(k, v)
-	}
-}
+func (r *Request) withHeader(k, v string) { _ = "STUB: not implemented"; return }
 
 // WithCookies adds given cookies to request.
 //
@@ -1580,28 +688,8 @@ func (r *Request) withHeader(k, v string) {
 //		"bar": "bb",
 //	})
 func (r *Request) WithCookies(cookies map[string]string) *Request {
-	opChain := r.chain.enter("WithCookies()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithCookies()") {
-		return r
-	}
-
-	for k, v := range cookies {
-		r.httpReq.AddCookie(&http.Cookie{
-			Name:  k,
-			Value: v,
-		})
-	}
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithCookie adds given single cookie to request.
@@ -1610,28 +698,7 @@ func (r *Request) WithCookies(cookies map[string]string) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithCookie("name", "value")
-func (r *Request) WithCookie(k, v string) *Request {
-	opChain := r.chain.enter("WithCookie()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithCookie()") {
-		return r
-	}
-
-	r.httpReq.AddCookie(&http.Cookie{
-		Name:  k,
-		Value: v,
-	})
-
-	return r
-}
+func (r *Request) WithCookie(k, v string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithBasicAuth sets the request's Authorization header to use HTTP
 // Basic Authentication with the provided username and password.
@@ -1644,23 +711,8 @@ func (r *Request) WithCookie(k, v string) *Request {
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithBasicAuth("john", "secret")
 func (r *Request) WithBasicAuth(username, password string) *Request {
-	opChain := r.chain.enter("WithBasicAuth()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithBasicAuth()") {
-		return r
-	}
-
-	r.httpReq.SetBasicAuth(username, password)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithHost sets request host to given string.
@@ -1669,25 +721,7 @@ func (r *Request) WithBasicAuth(username, password string) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithHost("example.com")
-func (r *Request) WithHost(host string) *Request {
-	opChain := r.chain.enter("WithHost()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithHost()") {
-		return r
-	}
-
-	r.httpReq.Host = host
-
-	return r
-}
+func (r *Request) WithHost(host string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithProto sets HTTP protocol version.
 //
@@ -1697,40 +731,7 @@ func (r *Request) WithHost(host string) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithProto("HTTP/2.0")
-func (r *Request) WithProto(proto string) *Request {
-	opChain := r.chain.enter("WithProto()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithProto()") {
-		return r
-	}
-
-	major, minor, ok := http.ParseHTTPVersion(proto)
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf(
-					`unexpected protocol version %q, expected "HTTP/{major}.{minor}"`,
-					proto),
-			},
-		})
-		return r
-	}
-
-	r.httpReq.ProtoMajor = major
-	r.httpReq.ProtoMinor = minor
-
-	return r
-}
+func (r *Request) WithProto(proto string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithChunked enables chunked encoding and sets request body reader.
 //
@@ -1747,37 +748,7 @@ func (r *Request) WithProto(proto string) *Request {
 //	defer fh.Close()
 //	req.WithHeader("Content-Type", "application/octet-stream")
 //	req.WithChunked(fh)
-func (r *Request) WithChunked(reader io.Reader) *Request {
-	opChain := r.chain.enter("WithChunked()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithChunked()") {
-		return r
-	}
-	if !r.httpReq.ProtoAtLeast(1, 1) {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf(
-					`chunked Transfer-Encoding requires at least "HTTP/1.1",`+
-						` but "HTTP/%d.%d" is used`,
-					r.httpReq.ProtoMajor, r.httpReq.ProtoMinor),
-			},
-		})
-		return r
-	}
-
-	r.setBody(opChain, "WithChunked()", reader, -1, false)
-
-	return r
-}
+func (r *Request) WithChunked(reader io.Reader) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithBytes sets request body to given slice of bytes.
 //
@@ -1786,29 +757,7 @@ func (r *Request) WithChunked(reader io.Reader) *Request {
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithHeader("Content-Type", "application/json")
 //	req.WithBytes([]byte(`{"foo": 123}`))
-func (r *Request) WithBytes(b []byte) *Request {
-	opChain := r.chain.enter("WithBytes()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithBytes()") {
-		return r
-	}
-
-	if b == nil {
-		r.setBody(opChain, "WithBytes()", nil, 0, false)
-	} else {
-		r.setBody(opChain, "WithBytes()", bytes.NewReader(b), len(b), false)
-	}
-
-	return r
-}
+func (r *Request) WithBytes(b []byte) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithText sets Content-Type header to "text/plain; charset=utf-8" and
 // sets body to given string.
@@ -1817,26 +766,7 @@ func (r *Request) WithBytes(b []byte) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithText("hello, world!")
-func (r *Request) WithText(s string) *Request {
-	opChain := r.chain.enter("WithText()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithText()") {
-		return r
-	}
-
-	r.setType(opChain, "WithText()", "text/plain; charset=utf-8", false)
-	r.setBody(opChain, "WithText()", strings.NewReader(s), len(s), false)
-
-	return r
-}
+func (r *Request) WithText(s string) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithJSON sets Content-Type header to "application/json; charset=utf-8"
 // and sets body to object, marshaled using json.Marshal().
@@ -1852,40 +782,7 @@ func (r *Request) WithText(s string) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithJSON(map[string]interface{}{"foo": 123})
-func (r *Request) WithJSON(object interface{}) *Request {
-	opChain := r.chain.enter("WithJSON()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithJSON()") {
-		return r
-	}
-
-	b, err := json.Marshal(object)
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{object},
-			Errors: []error{
-				errors.New("invalid json object"),
-				err,
-			},
-		})
-		return r
-	}
-
-	r.setType(opChain, "WithJSON()", "application/json; charset=utf-8", false)
-	r.setBody(opChain, "WithJSON()", bytes.NewReader(b), len(b), false)
-
-	return r
-}
+func (r *Request) WithJSON(object interface{}) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithForm sets Content-Type header to "application/x-www-form-urlencoded"
 // or (if WithMultipart() was called) "multipart/form-data", converts given
@@ -1909,69 +806,7 @@ func (r *Request) WithJSON(object interface{}) *Request {
 //
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithForm(map[string]interface{}{"foo": 123})
-func (r *Request) WithForm(object interface{}) *Request {
-	opChain := r.chain.enter("WithForm()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithForm()") {
-		return r
-	}
-
-	f, err := form.EncodeToValues(object)
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{object},
-			Errors: []error{
-				errors.New("invalid form object"),
-				err,
-			},
-		})
-		return r
-	}
-
-	if r.multipart != nil {
-		r.setType(opChain, "WithForm()", "multipart/form-data", false)
-
-		var keys []string
-		for k := range f {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-
-		for _, k := range keys {
-			if err := r.multipart.WriteField(k, f[k][0]); err != nil {
-				opChain.fail(AssertionFailure{
-					Type: AssertOperation,
-					Errors: []error{
-						fmt.Errorf("failed to write multipart form field %q", k),
-						err,
-					},
-				})
-				return r
-			}
-		}
-	} else {
-		r.setType(opChain, "WithForm()", "application/x-www-form-urlencoded", false)
-
-		if r.form == nil {
-			r.form = make(url.Values)
-		}
-		for k, v := range f {
-			r.form[k] = append(r.form[k], v...)
-		}
-	}
-
-	return r
-}
+func (r *Request) WithForm(object interface{}) *Request { _ = "STUB: not implemented"; return nil }
 
 // WithFormField sets Content-Type header to "application/x-www-form-urlencoded"
 // or (if WithMultipart() was called) "multipart/form-data", converts given
@@ -1986,44 +821,8 @@ func (r *Request) WithForm(object interface{}) *Request {
 //	req.WithFormField("foo", 123).
 //		WithFormField("bar", 456)
 func (r *Request) WithFormField(key string, value interface{}) *Request {
-	opChain := r.chain.enter("WithFormField()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithFormField()") {
-		return r
-	}
-
-	if r.multipart != nil {
-		r.setType(opChain, "WithFormField()", "multipart/form-data", false)
-
-		err := r.multipart.WriteField(key, fmt.Sprint(value))
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type: AssertOperation,
-				Errors: []error{
-					fmt.Errorf("failed to write multipart form field %q", key),
-					err,
-				},
-			})
-			return r
-		}
-	} else {
-		r.setType(opChain, "WithFormField()", "application/x-www-form-urlencoded", false)
-
-		if r.form == nil {
-			r.form = make(url.Values)
-		}
-		r.form[key] = append(r.form[key], fmt.Sprint(value))
-	}
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithFile sets Content-Type header to "multipart/form-data", reads given
@@ -2047,33 +846,8 @@ func (r *Request) WithFormField(key string, value interface{}) *Request {
 //		WithFile("avatar", "john.png", fh)
 //	fh.Close()
 func (r *Request) WithFile(key, path string, reader ...io.Reader) *Request {
-	opChain := r.chain.enter("WithFile()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithFile()") {
-		return r
-	}
-
-	if len(reader) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple reader arguments"),
-			},
-		})
-		return r
-	}
-
-	r.withFile(opChain, "WithFile()", key, path, reader...)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // WithFileBytes is like WithFile, but uses given slice of bytes as the
@@ -2088,83 +862,15 @@ func (r *Request) WithFile(key, path string, reader ...io.Reader) *Request {
 //		WithFileBytes("avatar", "john.png", b)
 //	fh.Close()
 func (r *Request) WithFileBytes(key, path string, data []byte) *Request {
-	opChain := r.chain.enter("WithFileBytes()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithFileBytes()") {
-		return r
-	}
-
-	r.withFile(opChain, "WithFileBytes()", key, path, bytes.NewReader(data))
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *Request) withFile(
 	opChain *chain, method, key, path string, reader ...io.Reader,
 ) {
-	r.setType(opChain, method, "multipart/form-data", false)
-
-	if r.multipart == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("%s requires WithMultipart() to be called first", method),
-			},
-		})
-		return
-	}
-
-	wr, err := r.multipart.CreateFormFile(key, path)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				fmt.Errorf(
-					"failed to create form file with key %q and path %q",
-					key, path),
-				err,
-			},
-		})
-		return
-	}
-
-	var rd io.Reader
-	if len(reader) != 0 && reader[0] != nil {
-		rd = reader[0]
-	} else {
-		f, err := os.Open(path)
-		if err != nil {
-			opChain.fail(AssertionFailure{
-				Type: AssertOperation,
-				Errors: []error{
-					fmt.Errorf("failed to open file %q", path),
-					err,
-				},
-			})
-			return
-		}
-		rd = f
-		defer f.Close()
-	}
-
-	if _, err := io.Copy(wr, rd); err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				fmt.Errorf("failed to read file %q", path),
-				err,
-			},
-		})
-		return
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 // WithMultipart sets Content-Type header to "multipart/form-data".
@@ -2182,31 +888,7 @@ func (r *Request) withFile(
 //	req := NewRequestC(config, "PUT", "http://example.com/path")
 //	req.WithMultipart().
 //		WithForm(map[string]interface{}{"foo": 123})
-func (r *Request) WithMultipart() *Request {
-	opChain := r.chain.enter("WithMultipart()")
-	defer opChain.leave()
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if !r.checkOrder(opChain, "WithMultipart()") {
-		return r
-	}
-
-	r.setType(opChain, "WithMultipart()", "multipart/form-data", false)
-
-	if r.multipart == nil {
-		r.formBuf = &bytes.Buffer{}
-		r.multipart = r.multipartFn(r.formBuf)
-		r.setBody(opChain, "WithMultipart()", r.formBuf, 0, false)
-	}
-
-	return r
-}
+func (r *Request) WithMultipart() *Request { _ = "STUB: not implemented"; return nil }
 
 // Expect constructs http.Request, sends it, receives http.Response, and
 // returns a new Response instance.
@@ -2223,436 +905,72 @@ func (r *Request) WithMultipart() *Request {
 //	req.WithJSON(map[string]interface{}{"foo": 123})
 //	resp := req.Expect()
 //	resp.Status(http.StatusOK)
-func (r *Request) Expect() *Response {
-	opChain := r.chain.enter("Expect()")
-	defer opChain.leave()
+func (r *Request) Expect() *Response { _ = "STUB: not implemented"; return nil }
 
-	resp := r.expect(opChain)
+func (r *Request) expect(opChain *chain) *Response { _ = "STUB: not implemented"; return nil }
 
-	if resp == nil {
-		resp = newResponse(responseOpts{
-			config: r.config,
-			chain:  opChain,
-		})
-	}
+// after return from prepare(), all subsequent calls to WithXXX and Expect will
+// abort early due to checkOrder(); so we can safely proceed without a lock
 
-	return resp
-}
+func (r *Request) prepare(opChain *chain) bool { _ = "STUB: not implemented"; return false }
 
-func (r *Request) expect(opChain *chain) *Response {
-	if !r.prepare(opChain) {
-		return nil
-	}
+func (r *Request) execute(opChain *chain) *Response { _ = "STUB: not implemented"; return nil }
 
-	// after return from prepare(), all subsequent calls to WithXXX and Expect will
-	// abort early due to checkOrder(); so we can safely proceed without a lock
-
-	resp := r.execute(opChain)
-
-	if resp == nil {
-		return nil
-	}
-
-	for _, matcher := range r.matchers {
-		matcher(resp)
-	}
-
-	return resp
-}
-
-func (r *Request) prepare(opChain *chain) bool {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	if opChain.failed() {
-		return false
-	}
-
-	if !r.checkOrder(opChain, "Expect()") {
-		return false
-	}
-
-	r.expectCalled = true
-
-	return true
-}
-
-func (r *Request) execute(opChain *chain) *Response {
-	if !r.encodeRequest(opChain) {
-		return nil
-	}
-
-	if r.wsUpgrade {
-		if !r.encodeWebsocketRequest(opChain) {
-			return nil
-		}
-	}
-
-	for _, transform := range r.transformers {
-		transform(r.httpReq)
-
-		if opChain.failed() {
-			return nil
-		}
-	}
-
-	var (
-		httpResp *http.Response
-		websock  *websocket.Conn
-		elapsed  time.Duration
-	)
-	if r.wsUpgrade {
-		httpResp, websock, elapsed = r.sendWebsocketRequest(opChain)
-	} else {
-		httpResp, elapsed = r.sendRequest(opChain)
-	}
-
-	if httpResp == nil {
-		return nil
-	}
-
-	return newResponse(responseOpts{
-		config:    r.config,
-		chain:     opChain,
-		httpResp:  httpResp,
-		websocket: websock,
-		rtt:       []time.Duration{elapsed},
-	})
-}
-
-func (r *Request) encodeRequest(opChain *chain) bool {
-	r.httpReq.URL.Path = concatPaths(r.httpReq.URL.Path, r.path)
-
-	if r.query != nil {
-		r.httpReq.URL.RawQuery = r.query.Encode()
-	}
-
-	if r.multipart != nil {
-		if err := r.multipart.Close(); err != nil {
-			opChain.fail(AssertionFailure{
-				Type: AssertOperation,
-				Errors: []error{
-					errors.New("failed to close multipart form"),
-					err,
-				},
-			})
-			return false
-		}
-
-		r.setType(opChain, "Expect()", r.multipart.FormDataContentType(), true)
-		r.setBody(opChain, "Expect()", r.formBuf, r.formBuf.Len(), true)
-	} else if r.form != nil {
-		s := r.form.Encode()
-		r.setBody(opChain,
-			"WithForm() or WithFormField()", strings.NewReader(s), len(s), false)
-	}
-
-	if r.httpReq.Body == nil {
-		r.httpReq.Body = http.NoBody
-	}
-
-	if r.config.Context != nil {
-		r.httpReq = r.httpReq.WithContext(r.config.Context)
-	}
-
-	r.setupRedirects(opChain)
-
-	return true
-}
+func (r *Request) encodeRequest(opChain *chain) bool { _ = "STUB: not implemented"; return false }
 
 var websocketErr = `webocket request can not have body:
   body was set by %s
   webocket was enabled by WithWebsocketUpgrade()`
 
 func (r *Request) encodeWebsocketRequest(opChain *chain) bool {
-	if r.bodySetter != "" {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf(websocketErr, r.bodySetter),
-			},
-		})
-		return false
-	}
-
-	switch r.httpReq.URL.Scheme {
-	case "https":
-		r.httpReq.URL.Scheme = "wss"
-	default:
-		r.httpReq.URL.Scheme = "ws"
-	}
-
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 func (r *Request) sendRequest(opChain *chain) (*http.Response, time.Duration) {
-	resp, elapsed, err := r.retryRequest(func() (*http.Response, error) {
-		return r.config.Client.Do(r.httpReq)
-	})
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				errors.New("failed to send http request"),
-				err,
-			},
-		})
-		return nil, 0
-	}
-
-	return resp, elapsed
+	_ = "STUB: not implemented"
+	return nil, *new(time.Duration)
 }
 
 func (r *Request) sendWebsocketRequest(opChain *chain) (
 	*http.Response, *websocket.Conn, time.Duration,
 ) {
-	var conn *websocket.Conn
-	resp, elapsed, err := r.retryRequest(func() (resp *http.Response, err error) {
-		conn, resp, err = r.config.WebsocketDialer.Dial(
-			r.httpReq.URL.String(), r.httpReq.Header)
-		return resp, err
-	})
-
-	if err != nil && err != websocket.ErrBadHandshake {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				errors.New("failed to send websocket request"),
-				err,
-			},
-		})
-		return nil, nil, 0
-	}
-
-	if conn == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				errors.New("failed to upgrade connection to websocket"),
-			},
-		})
-		return nil, nil, 0
-	}
-
-	return resp, conn, elapsed
+	_ = "STUB: not implemented"
+	return nil, nil, *new(time.Duration)
 }
 
 func (r *Request) retryRequest(reqFunc func() (*http.Response, error)) (
 	*http.Response, time.Duration, error,
 ) {
-	if r.httpReq.Body != nil && r.httpReq.Body != http.NoBody {
-		if _, ok := r.httpReq.Body.(*bodyWrapper); !ok {
-			r.httpReq.Body = newBodyWrapper(r.httpReq.Body, nil)
-		}
-	}
-
-	reqBody, _ := r.httpReq.Body.(*bodyWrapper)
-
-	delay := r.minRetryDelay
-	i := 0
-
-	for {
-		for _, printer := range r.config.Printers {
-			if reqBody != nil {
-				reqBody.Rewind()
-			}
-			// Make a copy to avoid accidental modification of request.
-			// In particular, httputil.DumpRequest reads sets request body into a buffer
-			// and set req.Body to a wrapper that will re-read body from buffer.
-			// It breaks our bodyWrapper logic as we don't expect that someone will
-			// replace bodyWrapper with something else.
-			httpReqCopy := *r.httpReq
-			printer.Request(&httpReqCopy)
-		}
-
-		if reqBody != nil {
-			reqBody.Rewind()
-		}
-
-		var cancelFn context.CancelFunc
-
-		if r.timeout > 0 {
-			var ctx context.Context
-			if r.config.Context != nil {
-				ctx, cancelFn = context.WithTimeout(r.config.Context, r.timeout)
-			} else {
-				ctx, cancelFn = context.WithTimeout(context.Background(), r.timeout)
-			}
-
-			r.httpReq = r.httpReq.WithContext(ctx)
-		}
-
-		start := time.Now()
-		resp, err := reqFunc()
-		elapsed := time.Since(start)
-
-		if resp != nil && resp.Body != nil {
-			resp.Body = newBodyWrapper(resp.Body, cancelFn)
-		} else if cancelFn != nil {
-			cancelFn()
-		}
-
-		if resp != nil {
-			for _, printer := range r.config.Printers {
-				if resp.Body != nil {
-					resp.Body.(*bodyWrapper).Rewind()
-				}
-				// Make a copy to avoid accidental modification of request.
-				// See comment above.
-				httpRespCopy := *resp
-				printer.Response(&httpRespCopy, elapsed)
-			}
-		}
-
-		i++
-		if i == r.maxRetries+1 {
-			return resp, elapsed, err
-		}
-
-		if !r.shouldRetry(resp, err) {
-			return resp, elapsed, err
-		}
-
-		if resp != nil && resp.Body != nil {
-			resp.Body.Close()
-		}
-
-		if configCtx := r.config.Context; configCtx != nil {
-			select {
-			case <-configCtx.Done():
-				return nil, elapsed, configCtx.Err()
-			case <-r.sleepFn(delay):
-			}
-		} else {
-			<-r.sleepFn(delay)
-		}
-
-		delay *= 2
-		if delay > r.maxRetryDelay {
-			delay = r.maxRetryDelay
-		}
-	}
+	_ = "STUB: not implemented"
+	return nil, *new(time.Duration), nil
 }
 
+// Make a copy to avoid accidental modification of request.
+// In particular, httputil.DumpRequest reads sets request body into a buffer
+// and set req.Body to a wrapper that will re-read body from buffer.
+// It breaks our bodyWrapper logic as we don't expect that someone will
+// replace bodyWrapper with something else.
+
+// Make a copy to avoid accidental modification of request.
+// See comment above.
+
 func (r *Request) shouldRetry(resp *http.Response, err error) bool {
-	if r.retryPolicyFn != nil {
-		return r.retryPolicyFn(resp, err) // set by WithRetryPolicyFunc
-	}
-
-	var (
-		isTemporaryNetworkError bool // Deprecated
-		isTimeoutError          bool
-		isServerError           bool
-		isHTTPError             bool
-	)
-
-	if netErr, ok := err.(net.Error); ok {
-		//nolint
-		isTemporaryNetworkError = netErr.Temporary()
-		isTimeoutError = netErr.Timeout()
-	}
-
-	if resp != nil {
-		isServerError = resp.StatusCode >= 500 && resp.StatusCode <= 599
-		isHTTPError = resp.StatusCode >= 400 && resp.StatusCode <= 599
-	}
-
-	policy := r.retryPolicy // set by WithRetryPolicy
-	if r.retryPolicy == defaultRetryPolicy {
-		policy = RetryTimeoutAndServerErrors
-	}
-
-	switch policy {
-	case defaultRetryPolicy:
-		// can't happen
-
-	case DontRetry:
-		break
-
-	case RetryTemporaryNetworkErrors:
-		return isTemporaryNetworkError
-
-	case RetryTemporaryNetworkAndServerErrors:
-		return isTemporaryNetworkError || isServerError
-
-	case RetryTimeoutErrors:
-		return isTimeoutError
-
-	case RetryTimeoutAndServerErrors:
-		return isTimeoutError || isServerError
-
-	case RetryAllErrors:
-		return err != nil || isHTTPError
-	}
-
+	_ = "STUB: not implemented"
 	return false
 }
 
-func (r *Request) setupRedirects(opChain *chain) {
-	httpClient, _ := r.config.Client.(*http.Client)
+// set by WithRetryPolicyFunc
 
-	if httpClient == nil {
-		if r.redirectPolicy != defaultRedirectPolicy {
-			opChain.fail(AssertionFailure{
-				Type: AssertUsage,
-				Errors: []error{
-					errors.New(
-						"WithRedirectPolicy() can be used only if Client is *http.Client"),
-				},
-			})
-			return
-		}
+// Deprecated
 
-		if r.maxRedirects != -1 {
-			opChain.fail(AssertionFailure{
-				Type: AssertUsage,
-				Errors: []error{
-					errors.New(
-						"WithMaxRedirects() can be used only if Client is *http.Client"),
-				},
-			})
-			return
-		}
-	} else {
-		if r.redirectPolicy != defaultRedirectPolicy || r.maxRedirects != -1 {
-			clientCopy := *httpClient
-			httpClient = &clientCopy
-			r.config.Client = &clientCopy
-		}
-	}
+//nolint
 
-	if r.redirectPolicy == DontFollowRedirects {
-		httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}
-	} else if r.maxRedirects >= 0 {
-		httpClient.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			if len(via) > r.maxRedirects {
-				return fmt.Errorf("stopped after %d redirects", r.maxRedirects)
-			}
-			return nil
-		}
-	} else if r.redirectPolicy != defaultRedirectPolicy {
-		httpClient.CheckRedirect = nil
-	}
+// set by WithRetryPolicy
 
-	if r.redirectPolicy == FollowAllRedirects {
-		if r.httpReq.Body != nil && r.httpReq.Body != http.NoBody {
-			if _, ok := r.httpReq.Body.(*bodyWrapper); !ok {
-				r.httpReq.Body = newBodyWrapper(r.httpReq.Body, nil)
-			}
-			wrapper := r.httpReq.Body.(*bodyWrapper)
-			r.httpReq.GetBody = wrapper.GetBody
-		} else {
-			r.httpReq.GetBody = func() (io.ReadCloser, error) {
-				return http.NoBody, nil
-			}
-		}
-	} else if r.redirectPolicy != defaultRedirectPolicy {
-		r.httpReq.GetBody = nil
-	}
-}
+// can't happen
+
+func (r *Request) setupRedirects(opChain *chain) { _ = "STUB: not implemented"; return }
 
 var typeErr = `ambiguous request "Content-Type" header values:
   first set by %s:
@@ -2663,27 +981,8 @@ var typeErr = `ambiguous request "Content-Type" header values:
 func (r *Request) setType(
 	opChain *chain, newSetter, newType string, overwrite bool,
 ) {
-	if r.forceType {
-		return
-	}
-
-	if !overwrite {
-		previousType := r.httpReq.Header.Get("Content-Type")
-
-		if previousType != "" && previousType != newType {
-			opChain.fail(AssertionFailure{
-				Type: AssertUsage,
-				Errors: []error{
-					fmt.Errorf(typeErr,
-						r.typeSetter, previousType, newSetter, newType),
-				},
-			})
-			return
-		}
-	}
-
-	r.typeSetter = newSetter
-	r.httpReq.Header["Content-Type"] = []string{newType}
+	_ = "STUB: not implemented"
+	return
 }
 
 var bodyErr = `ambiguous request body contents:
@@ -2693,59 +992,15 @@ var bodyErr = `ambiguous request body contents:
 func (r *Request) setBody(
 	opChain *chain, setter string, reader io.Reader, length int, overwrite bool,
 ) {
-	if !overwrite && r.bodySetter != "" {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf(bodyErr, r.bodySetter, setter),
-			},
-		})
-		return
-	}
-
-	if length > 0 && reader == nil {
-		panic("invalid length")
-	}
-
-	if reader == nil {
-		r.httpReq.Body = http.NoBody
-		r.httpReq.ContentLength = 0
-	} else {
-		r.httpReq.Body = io.NopCloser(reader)
-		r.httpReq.ContentLength = int64(length)
-	}
-
-	r.bodySetter = setter
+	_ = "STUB: not implemented"
+	return
 }
 
 func (r *Request) checkOrder(opChain *chain, funcCall string) bool {
-	if r.expectCalled {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("unexpected call to %s: Expect() has already been called", funcCall),
-			},
-		})
-		return false
-	}
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
-func concatPaths(a, b string) string {
-	if a == "" {
-		return b
-	}
-	if b == "" {
-		return a
-	}
-	a = strings.TrimSuffix(a, "/")
-	b = strings.TrimPrefix(b, "/")
-	return a + "/" + b
-}
+func concatPaths(a, b string) string { _ = "STUB: not implemented"; return "" }
 
-func mustWrite(w io.Writer, s string) {
-	_, err := w.Write([]byte(s))
-	if err != nil {
-		panic(err)
-	}
-}
+func mustWrite(w io.Writer, s string) { _ = "STUB: not implemented"; return }

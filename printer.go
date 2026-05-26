@@ -1,15 +1,8 @@
 package httpexpect
 
 import (
-	"bytes"
-	"fmt"
 	"net/http"
-	"net/http/httputil"
-	"strings"
 	"time"
-
-	"github.com/gorilla/websocket"
-	"moul.io/http2curl/v2"
 )
 
 // Printer is used to print requests and responses.
@@ -48,50 +41,43 @@ type CompactPrinter struct {
 
 // NewCompactPrinter returns a new CompactPrinter given a logger.
 func NewCompactPrinter(logger Logger) CompactPrinter {
-	return CompactPrinter{logger}
+	_ = "STUB: not implemented"
+	return *new(CompactPrinter)
 }
 
 // Request implements Printer.Request.
-func (p CompactPrinter) Request(req *http.Request) {
-	if req != nil {
-		p.logger.Logf("%s %s", req.Method, req.URL)
-	}
-}
+func (p CompactPrinter) Request(req *http.Request) { _ = "STUB: not implemented"; return }
 
 // Response implements Printer.Response.
 func (CompactPrinter) Response(*http.Response, time.Duration) {
+	_ = "STUB: not implemented"
+
+	// CurlPrinter implements Printer.
+	// Uses http2curl to dump requests as curl commands that can be inserted
+	// into terminal.
+	return
 }
 
-// CurlPrinter implements Printer.
-// Uses http2curl to dump requests as curl commands that can be inserted
-// into terminal.
 type CurlPrinter struct {
 	logger Logger
 }
 
 // NewCurlPrinter returns a new CurlPrinter given a logger.
-func NewCurlPrinter(logger Logger) CurlPrinter {
-	return CurlPrinter{logger}
-}
+func NewCurlPrinter(logger Logger) CurlPrinter { _ = "STUB: not implemented"; return *new(CurlPrinter) }
 
 // Request implements Printer.Request.
-func (p CurlPrinter) Request(req *http.Request) {
-	if req != nil {
-		cmd, err := http2curl.GetCurlCommand(req)
-		if err != nil {
-			panic(err)
-		}
-		p.logger.Logf("%s", cmd.String())
-	}
-}
+func (p CurlPrinter) Request(req *http.Request) { _ = "STUB: not implemented"; return }
 
 // Response implements Printer.Response.
 func (CurlPrinter) Response(*http.Response, time.Duration) {
+	_ = "STUB: not implemented"
+
+	// DebugPrinter implements Printer and WebsocketPrinter.
+	// Uses net/http/httputil to dump both requests and responses.
+	// Also prints all websocket messages.
+	return
 }
 
-// DebugPrinter implements Printer and WebsocketPrinter.
-// Uses net/http/httputil to dump both requests and responses.
-// Also prints all websocket messages.
 type DebugPrinter struct {
 	logger Logger
 	body   bool
@@ -100,73 +86,27 @@ type DebugPrinter struct {
 // NewDebugPrinter returns a new DebugPrinter given a logger and body
 // flag. If body is true, request and response body is also printed.
 func NewDebugPrinter(logger Logger, body bool) DebugPrinter {
-	return DebugPrinter{logger, body}
+	_ = "STUB: not implemented"
+	return *new(DebugPrinter)
 }
 
 // Request implements Printer.Request.
-func (p DebugPrinter) Request(req *http.Request) {
-	if req == nil {
-		return
-	}
-
-	dump, err := httputil.DumpRequest(req, p.body)
-	if err != nil {
-		panic(err)
-	}
-	p.logger.Logf("%s", dump)
-}
+func (p DebugPrinter) Request(req *http.Request) { _ = "STUB: not implemented"; return }
 
 // Response implements Printer.Response.
 func (p DebugPrinter) Response(resp *http.Response, duration time.Duration) {
-	if resp == nil {
-		return
-	}
-
-	dump, err := httputil.DumpResponse(resp, p.body)
-	if err != nil {
-		panic(err)
-	}
-
-	text := strings.Replace(string(dump), "\r\n", "\n", -1)
-	lines := strings.SplitN(text, "\n", 2)
-
-	p.logger.Logf("%s %s\n%s", lines[0], duration, lines[1])
+	_ = "STUB: not implemented"
+	return
 }
 
 // WebsocketWrite implements WebsocketPrinter.WebsocketWrite.
 func (p DebugPrinter) WebsocketWrite(typ int, content []byte, closeCode int) {
-	b := &bytes.Buffer{}
-	fmt.Fprintf(b, "-> Sent: %s", wsMessageType(typ))
-	if typ == websocket.CloseMessage {
-		fmt.Fprintf(b, " %s", wsCloseCode(closeCode))
-	}
-	fmt.Fprint(b, "\n")
-	if len(content) > 0 {
-		if typ == websocket.BinaryMessage {
-			fmt.Fprintf(b, "%v\n", content)
-		} else {
-			fmt.Fprintf(b, "%s\n", content)
-		}
-	}
-	fmt.Fprintf(b, "\n")
-	p.logger.Logf(b.String())
+	_ = "STUB: not implemented"
+	return
 }
 
 // WebsocketRead implements WebsocketPrinter.WebsocketRead.
 func (p DebugPrinter) WebsocketRead(typ int, content []byte, closeCode int) {
-	b := &bytes.Buffer{}
-	fmt.Fprintf(b, "<- Received: %s", wsMessageType(typ))
-	if typ == websocket.CloseMessage {
-		fmt.Fprintf(b, " %s", wsCloseCode(closeCode))
-	}
-	fmt.Fprint(b, "\n")
-	if len(content) > 0 {
-		if typ == websocket.BinaryMessage {
-			fmt.Fprintf(b, "%v\n", content)
-		} else {
-			fmt.Fprintf(b, "%s\n", content)
-		}
-	}
-	fmt.Fprintf(b, "\n")
-	p.logger.Logf(b.String())
+	_ = "STUB: not implemented"
+	return
 }

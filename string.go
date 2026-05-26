@@ -1,16 +1,5 @@
 package httpexpect
 
-import (
-	"errors"
-	"fmt"
-	"net/http"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
-	"unicode"
-)
-
 // String provides methods to inspect attached string value
 // (Go representation of JSON string).
 type String struct {
@@ -26,9 +15,7 @@ type String struct {
 // Example:
 //
 //	str := NewString(t, "Hello")
-func NewString(reporter Reporter, value string) *String {
-	return newString(newChainWithDefaults("String()", reporter), value)
-}
+func NewString(reporter Reporter, value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NewStringC returns a new String instance with config.
 //
@@ -37,13 +24,9 @@ func NewString(reporter Reporter, value string) *String {
 // Example:
 //
 //	str := NewStringC(config, "Hello")
-func NewStringC(config Config, value string) *String {
-	return newString(newChainWithConfig("String()", config.withDefaults()), value)
-}
+func NewStringC(config Config, value string) *String { _ = "STUB: not implemented"; return nil }
 
-func newString(parent *chain, val string) *String {
-	return &String{chain: parent.clone(), value: val}
-}
+func newString(parent *chain, val string) *String { _ = "STUB: not implemented"; return nil }
 
 // Raw returns underlying value attached to String.
 // This is the value originally passed to NewString.
@@ -53,60 +36,35 @@ func newString(parent *chain, val string) *String {
 //	str := NewString(t, "Hello")
 //	assert.Equal(t, "Hello", str.Raw())
 func (s *String) Raw() string {
-	return s.value
+	_ = "STUB: not implemented"
+
+	// Decode unmarshals the underlying value attached to the String to a target variable.
+	// target should be one of these:
+	//
+	//   - pointer to an empty interface
+	//   - pointer to a string
+	//
+	// Example:
+	//
+	//	value := NewString(t, "foo")
+	//
+	//	var target string
+	//	value.Decode(&target)
+	//
+	//	assert.Equal(t, "foo", target)
+	return ""
 }
 
-// Decode unmarshals the underlying value attached to the String to a target variable.
-// target should be one of these:
-//
-//   - pointer to an empty interface
-//   - pointer to a string
-//
-// Example:
-//
-//	value := NewString(t, "foo")
-//
-//	var target string
-//	value.Decode(&target)
-//
-//	assert.Equal(t, "foo", target)
-func (s *String) Decode(target interface{}) *String {
-	opChain := s.chain.enter("Decode()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	canonDecode(opChain, s.value, target)
-	return s
-}
+func (s *String) Decode(target interface{}) *String { _ = "STUB: not implemented"; return nil }
 
 // Alias is similar to Value.Alias.
-func (s *String) Alias(name string) *String {
-	opChain := s.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	s.chain.setAlias(name)
-	return s
-}
+func (s *String) Alias(name string) *String { _ = "STUB: not implemented"; return nil }
 
 // Path is similar to Value.Path.
-func (s *String) Path(path string) *Value {
-	opChain := s.chain.enter("Path(%q)", path)
-	defer opChain.leave()
-
-	return jsonPath(opChain, s.value, path)
-}
+func (s *String) Path(path string) *Value { _ = "STUB: not implemented"; return nil }
 
 // Schema is similar to Value.Schema.
-func (s *String) Schema(schema interface{}) *String {
-	opChain := s.chain.enter("Schema()")
-	defer opChain.leave()
-
-	jsonSchema(opChain, s.value, schema)
-	return s
-}
+func (s *String) Schema(schema interface{}) *String { _ = "STUB: not implemented"; return nil }
 
 // Length returns a new Number instance with string length.
 //
@@ -114,16 +72,7 @@ func (s *String) Schema(schema interface{}) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.Length().IsEqual(5)
-func (s *String) Length() *Number {
-	opChain := s.chain.enter("Length()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newNumber(opChain, 0)
-	}
-
-	return newNumber(opChain, float64(len(s.value)))
-}
+func (s *String) Length() *Number { _ = "STUB: not implemented"; return nil }
 
 // IsEmpty succeeds if string is empty.
 //
@@ -131,26 +80,7 @@ func (s *String) Length() *Number {
 //
 //	str := NewString(t, "")
 //	str.IsEmpty()
-func (s *String) IsEmpty() *String {
-	opChain := s.chain.enter("IsEmpty()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !(s.value == "") {
-		opChain.fail(AssertionFailure{
-			Type:   AssertEmpty,
-			Actual: &AssertionValue{s.value},
-			Errors: []error{
-				errors.New("expected: string is empty"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) IsEmpty() *String { _ = "STUB: not implemented"; return nil }
 
 // NotEmpty succeeds if string is non-empty.
 //
@@ -158,59 +88,22 @@ func (s *String) IsEmpty() *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotEmpty()
-func (s *String) NotEmpty() *String {
-	opChain := s.chain.enter("NotEmpty()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if s.value == "" {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNotEmpty,
-			Actual: &AssertionValue{s.value},
-			Errors: []error{
-				errors.New("expected: string is non-empty"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotEmpty() *String { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsEmpty instead.
 func (s *String) Empty() *String {
-	return s.IsEmpty()
+	_ = "STUB: not implemented"
+
+	// IsEqual succeeds if string is equal to given Go string.
+	//
+	// Example:
+	//
+	//	str := NewString(t, "Hello")
+	//	str.IsEqual("Hello")
+	return nil
 }
 
-// IsEqual succeeds if string is equal to given Go string.
-//
-// Example:
-//
-//	str := NewString(t, "Hello")
-//	str.IsEqual("Hello")
-func (s *String) IsEqual(value string) *String {
-	opChain := s.chain.enter("IsEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !(s.value == value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: strings are equal"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) IsEqual(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotEqual succeeds if string is not equal to given Go string.
 //
@@ -218,32 +111,10 @@ func (s *String) IsEqual(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotEqual("Goodbye")
-func (s *String) NotEqual(value string) *String {
-	opChain := s.chain.enter("NotEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if s.value == value {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: strings are non-equal"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotEqual(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsEqual instead.
-func (s *String) Equal(value string) *String {
-	return s.IsEqual(value)
-}
+func (s *String) Equal(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // IsEqualFold succeeds if string is equal to given Go string after applying Unicode
 // case-folding (so it's a case-insensitive match).
@@ -252,27 +123,7 @@ func (s *String) Equal(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.IsEqualFold("hELLo")
-func (s *String) IsEqualFold(value string) *String {
-	opChain := s.chain.enter("IsEqualFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.EqualFold(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: strings are equal (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) IsEqualFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotEqualFold succeeds if string is not equal to given Go string after applying
 // Unicode case-folding (so it's a case-insensitive match).
@@ -281,32 +132,10 @@ func (s *String) IsEqualFold(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotEqualFold("gOODBYe")
-func (s *String) NotEqualFold(value string) *String {
-	opChain := s.chain.enter("NotEqualFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.EqualFold(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: strings are non-equal (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotEqualFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsEqualFold instead.
-func (s *String) EqualFold(value string) *String {
-	return s.IsEqualFold(value)
-}
+func (s *String) EqualFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // InList succeeds if the string is equal to one of the values from given
 // list of strings.
@@ -315,50 +144,7 @@ func (s *String) EqualFold(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.InList("Hello", "Goodbye")
-func (s *String) InList(values ...string) *String {
-	opChain := s.chain.enter("InList()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return s
-	}
-
-	var isListed bool
-	for _, v := range values {
-		if s.value == v {
-			isListed = true
-			break
-		}
-	}
-
-	if !isListed {
-		valueList := make([]interface{}, 0, len(values))
-		for _, v := range values {
-			valueList = append(valueList, v)
-		}
-
-		opChain.fail(AssertionFailure{
-			Type:     AssertBelongs,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{AssertionList(valueList)},
-			Errors: []error{
-				errors.New("expected: string is equal to one of the values"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) InList(values ...string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotInList succeeds if the string is not equal to any of the values from
 // given list of strings.
@@ -367,46 +153,7 @@ func (s *String) InList(values ...string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotInList("Sayonara", "Goodbye")
-func (s *String) NotInList(values ...string) *String {
-	opChain := s.chain.enter("NotInList()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return s
-	}
-
-	for _, v := range values {
-		if s.value == v {
-			valueList := make([]interface{}, 0, len(values))
-			for _, v := range values {
-				valueList = append(valueList, v)
-			}
-
-			opChain.fail(AssertionFailure{
-				Type:     AssertNotBelongs,
-				Actual:   &AssertionValue{s.value},
-				Expected: &AssertionValue{AssertionList(valueList)},
-				Errors: []error{
-					errors.New("expected: string is not equal to any of the values"),
-				},
-			})
-
-			return s
-		}
-	}
-
-	return s
-}
+func (s *String) NotInList(values ...string) *String { _ = "STUB: not implemented"; return nil }
 
 // InListFold succeeds if the string is equal to one of the values from given
 // list of strings after applying Unicode case-folding (so it's a case-insensitive match).
@@ -415,50 +162,7 @@ func (s *String) NotInList(values ...string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.InListFold("hEllo", "Goodbye")
-func (s *String) InListFold(values ...string) *String {
-	opChain := s.chain.enter("InListFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return s
-	}
-
-	var isListed bool
-	for _, v := range values {
-		if strings.EqualFold(s.value, v) {
-			isListed = true
-			break
-		}
-	}
-
-	if !isListed {
-		valueList := make([]interface{}, 0, len(values))
-		for _, v := range values {
-			valueList = append(valueList, v)
-		}
-
-		opChain.fail(AssertionFailure{
-			Type:     AssertBelongs,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{AssertionList(valueList)},
-			Errors: []error{
-				errors.New("expected: string is equal to one of the values (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) InListFold(values ...string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotInListFold succeeds if the string is not equal to any of the values from given
 // list of strings after applying Unicode case-folding (so it's a case-insensitive match).
@@ -467,46 +171,7 @@ func (s *String) InListFold(values ...string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotInListFold("Bye", "Goodbye")
-func (s *String) NotInListFold(values ...string) *String {
-	opChain := s.chain.enter("NotInListFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return s
-	}
-
-	for _, v := range values {
-		if strings.EqualFold(s.value, v) {
-			valueList := make([]interface{}, 0, len(values))
-			for _, v := range values {
-				valueList = append(valueList, v)
-			}
-
-			opChain.fail(AssertionFailure{
-				Type:     AssertNotBelongs,
-				Actual:   &AssertionValue{s.value},
-				Expected: &AssertionValue{AssertionList(valueList)},
-				Errors: []error{
-					errors.New("expected: string is not equal to any of the values (if folded)"),
-				},
-			})
-
-			return s
-		}
-	}
-
-	return s
-}
+func (s *String) NotInListFold(values ...string) *String { _ = "STUB: not implemented"; return nil }
 
 // Contains succeeds if string contains given Go string as a substring.
 //
@@ -514,27 +179,7 @@ func (s *String) NotInListFold(values ...string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.Contains("ell")
-func (s *String) Contains(value string) *String {
-	opChain := s.chain.enter("Contains()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.Contains(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string contains sub-string"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) Contains(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotContains succeeds if string doesn't contain Go string as a substring.
 //
@@ -542,27 +187,7 @@ func (s *String) Contains(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotContains("bye")
-func (s *String) NotContains(value string) *String {
-	opChain := s.chain.enter("NotContains()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.Contains(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string does not contain sub-string"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotContains(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // ContainsFold succeeds if string contains given Go string as a substring after
 // applying Unicode case-folding (so it's a case-insensitive match).
@@ -571,27 +196,7 @@ func (s *String) NotContains(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.ContainsFold("ELL")
-func (s *String) ContainsFold(value string) *String {
-	opChain := s.chain.enter("ContainsFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.Contains(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string contains sub-string (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) ContainsFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotContainsFold succeeds if string doesn't contain given Go string as a substring
 // after applying Unicode case-folding (so it's a case-insensitive match).
@@ -600,27 +205,7 @@ func (s *String) ContainsFold(value string) *String {
 //
 //	str := NewString(t, "Hello")
 //	str.NotContainsFold("BYE")
-func (s *String) NotContainsFold(value string) *String {
-	opChain := s.chain.enter("NotContainsFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.Contains(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string does not contain sub-string (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotContainsFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // HasPrefix succeeds if string has given Go string as prefix
 //
@@ -628,27 +213,7 @@ func (s *String) NotContainsFold(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.HasPrefix("Hello")
-func (s *String) HasPrefix(value string) *String {
-	opChain := s.chain.enter("HasPrefix()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.HasPrefix(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string has prefix"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) HasPrefix(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotHasPrefix succeeds if string doesn't have given Go string as prefix
 //
@@ -656,27 +221,7 @@ func (s *String) HasPrefix(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.NotHasPrefix("Bye")
-func (s *String) NotHasPrefix(value string) *String {
-	opChain := s.chain.enter("NotHasPrefix()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.HasPrefix(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string doesn't have prefix"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotHasPrefix(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // HasSuffix succeeds if string has given Go string as suffix
 //
@@ -684,27 +229,7 @@ func (s *String) NotHasPrefix(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.HasSuffix("World")
-func (s *String) HasSuffix(value string) *String {
-	opChain := s.chain.enter("HasSuffix()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.HasSuffix(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string has suffix"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) HasSuffix(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotHasSuffix succeeds if string doesn't have given Go string as suffix
 //
@@ -712,27 +237,7 @@ func (s *String) HasSuffix(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.NotHasSuffix("Hello")
-func (s *String) NotHasSuffix(value string) *String {
-	opChain := s.chain.enter("NotHasSuffix()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.HasSuffix(s.value, value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string doesn't have suffix"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotHasSuffix(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // HasPrefixFold succeeds if string has given Go string as prefix
 // after applying Unicode case-folding (so it's a case-insensitive match).
@@ -741,27 +246,7 @@ func (s *String) NotHasSuffix(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.HasPrefixFold("hello")
-func (s *String) HasPrefixFold(value string) *String {
-	opChain := s.chain.enter("HasPrefixFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.HasPrefix(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string has prefix (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) HasPrefixFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotHasPrefixFold succeeds if string doesn't have given Go string as prefix
 // after applying Unicode case-folding (so it's a case-insensitive match).
@@ -770,27 +255,7 @@ func (s *String) HasPrefixFold(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.NotHasPrefixFold("Bye")
-func (s *String) NotHasPrefixFold(value string) *String {
-	opChain := s.chain.enter("NotHasPrefixFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.HasPrefix(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string doesn't have prefix (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotHasPrefixFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // HasSuffixFold succeeds if string has given Go string as suffix
 // after applying Unicode case-folding (so it's a case-insensitive match).
@@ -799,27 +264,7 @@ func (s *String) NotHasPrefixFold(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.HasSuffixFold("world")
-func (s *String) HasSuffixFold(value string) *String {
-	opChain := s.chain.enter("HasSuffixFold()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if !strings.HasSuffix(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string has suffix (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) HasSuffixFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // NotHasSuffixFold succeeds if string doesn't have given Go string as suffix
 // after applying Unicode case-folding (so it's a case-insensitive match).
@@ -828,27 +273,7 @@ func (s *String) HasSuffixFold(value string) *String {
 //
 //	str := NewString(t, "Hello World")
 //	str.NotHasSuffixFold("Bye")
-func (s *String) NotHasSuffixFold(value string) *String {
-	opChain := s.chain.enter("NotHasSuffix()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	if strings.HasSuffix(strings.ToLower(s.value), strings.ToLower(value)) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotContainsSubset,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string doesn't have suffix (if folded)"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotHasSuffixFold(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // Match matches the string with given regexp and returns a new Match instance
 // with found submatches.
@@ -871,42 +296,7 @@ func (s *String) NotHasSuffixFold(value string) *String {
 //
 //	m.NamedSubmatch("host").IsEqual("example.com")
 //	m.NamedSubmatch("user").IsEqual("john")
-func (s *String) Match(re string) *Match {
-	opChain := s.chain.enter("Match()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newMatch(opChain, nil, nil)
-	}
-
-	rx, err := regexp.Compile(re)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: valid regexp"),
-				err,
-			},
-		})
-		return newMatch(opChain, nil, nil)
-	}
-
-	match := rx.FindStringSubmatch(s.value)
-	if match == nil {
-		opChain.fail(AssertionFailure{
-			Type:     AssertMatchRegexp,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: string matches regexp"),
-			},
-		})
-		return newMatch(opChain, nil, nil)
-	}
-
-	return newMatch(opChain, match, rx.SubexpNames())
-}
+func (s *String) Match(re string) *Match { _ = "STUB: not implemented"; return nil }
 
 // NotMatch succeeds if the string doesn't match to given regexp.
 //
@@ -917,37 +307,7 @@ func (s *String) Match(re string) *Match {
 //
 //	s := NewString(t, "a")
 //	s.NotMatch(`[^a]`)
-func (s *String) NotMatch(re string) *String {
-	opChain := s.chain.enter("NotMatch()")
-	defer opChain.leave()
-
-	rx, err := regexp.Compile(re)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: valid regexp"),
-				err,
-			},
-		})
-		return s
-	}
-
-	if rx.MatchString(s.value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotMatchRegexp,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: string does not match regexp"),
-			},
-		})
-		return s
-	}
-
-	return s
-}
+func (s *String) NotMatch(re string) *String { _ = "STUB: not implemented"; return nil }
 
 // MatchAll find all matches in string for given regexp and returns a list
 // of found matches.
@@ -965,50 +325,7 @@ func (s *String) NotMatch(re string) *String {
 //
 //	m[0].NamedSubmatch("user").IsEqual("john")
 //	m[1].NamedSubmatch("user").IsEqual("bob")
-func (s *String) MatchAll(re string) []Match {
-	opChain := s.chain.enter("MatchAll()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return []Match{}
-	}
-
-	rx, err := regexp.Compile(re)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: valid regexp"),
-				err,
-			},
-		})
-		return []Match{}
-	}
-
-	matches := rx.FindAllStringSubmatch(s.value, -1)
-	if matches == nil {
-		opChain.fail(AssertionFailure{
-			Type:     AssertMatchRegexp,
-			Actual:   &AssertionValue{s.value},
-			Expected: &AssertionValue{re},
-			Errors: []error{
-				errors.New("expected: string matches regexp"),
-			},
-		})
-		return []Match{}
-	}
-
-	ret := []Match{}
-	for _, match := range matches {
-		ret = append(ret, *newMatch(
-			opChain,
-			match,
-			rx.SubexpNames()))
-	}
-
-	return ret
-}
+func (s *String) MatchAll(re string) []Match { _ = "STUB: not implemented"; return nil }
 
 // IsASCII succeeds if all string characters belongs to ASCII.
 //
@@ -1016,34 +333,7 @@ func (s *String) MatchAll(re string) []Match {
 //
 //	str := NewString(t, "Hello")
 //	str.IsASCII()
-func (s *String) IsASCII() *String {
-	opChain := s.chain.enter("IsASCII()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	isASCII := true
-	for _, c := range s.value {
-		if c > unicode.MaxASCII {
-			isASCII = false
-			break
-		}
-	}
-
-	if !isASCII {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{s.value},
-			Errors: []error{
-				errors.New("expected: all string characters are ascii"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) IsASCII() *String { _ = "STUB: not implemented"; return nil }
 
 // NotASCII succeeds if at least one string character does not belong to ASCII.
 //
@@ -1051,39 +341,10 @@ func (s *String) IsASCII() *String {
 //
 //	str := NewString(t, "こんにちは")
 //	str.NotASCII()
-func (s *String) NotASCII() *String {
-	opChain := s.chain.enter("NotASCII()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return s
-	}
-
-	isASCII := true
-	for _, c := range s.value {
-		if c > unicode.MaxASCII {
-			isASCII = false
-			break
-		}
-	}
-
-	if isASCII {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{s.value},
-			Errors: []error{
-				errors.New("expected: at least one string character is not ascii"),
-			},
-		})
-	}
-
-	return s
-}
+func (s *String) NotASCII() *String { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NotASCII instead.
-func (s *String) NotIsASCII() *String {
-	return s.NotASCII()
-}
+func (s *String) NotIsASCII() *String { _ = "STUB: not implemented"; return nil }
 
 // AsNumber parses float from string and returns a new Number instance
 // with result.
@@ -1100,97 +361,7 @@ func (s *String) NotIsASCII() *String {
 //
 //	str.AsNumber(10).IsEqual(100)
 //	str.AsNumber(16).IsEqual(256)
-func (s *String) AsNumber(base ...int) *Number {
-	opChain := s.chain.enter("AsNumber()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newNumber(opChain, 0)
-	}
-
-	if len(base) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple base arguments"),
-			},
-		})
-		return newNumber(opChain, 0)
-	}
-
-	b := 10
-	if len(base) != 0 {
-		b = base[0]
-	}
-
-	var fnum float64
-	var inum int64
-	var unum uint64
-	var err error
-
-	inum, err = strconv.ParseInt(s.value, b, 64)
-	fnum = float64(inum)
-
-	if err == nil && int64(fnum) != inum {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{s.value},
-			Errors: []error{
-				errors.New("expected:" +
-					" number can be represented as float64 without precision loss"),
-			},
-		})
-		return newNumber(opChain, 0)
-	}
-
-	if err != nil && errors.Is(err, strconv.ErrRange) {
-		unum, err = strconv.ParseUint(s.value, b, 64)
-		fnum = float64(unum)
-
-		if err == nil && uint64(fnum) != unum {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{s.value},
-				Errors: []error{
-					errors.New("expected:" +
-						" number can be represented as float64 without precision loss"),
-				},
-			})
-			return newNumber(opChain, 0)
-		}
-	}
-
-	if err != nil && b == 10 {
-		fnum, err = strconv.ParseFloat(s.value, 64)
-	}
-
-	if err != nil {
-		if b == 10 {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{s.value},
-				Errors: []error{
-					errors.New("expected: string can be parsed to integer or float"),
-					err,
-				},
-			})
-		} else {
-			opChain.fail(AssertionFailure{
-				Type:   AssertValid,
-				Actual: &AssertionValue{s.value},
-				Errors: []error{
-					fmt.Errorf(
-						"expected: string can be parsed to integer with base %d",
-						base[0]),
-					err,
-				},
-			})
-		}
-		return newNumber(opChain, 0)
-	}
-
-	return newNumber(opChain, fnum)
-}
+func (s *String) AsNumber(base ...int) *Number { _ = "STUB: not implemented"; return nil }
 
 // AsBoolean parses true/false value string and returns a new Boolean instance
 // with result.
@@ -1201,32 +372,7 @@ func (s *String) AsNumber(base ...int) *Number {
 //
 //	str := NewString(t, "true")
 //	str.AsBoolean().IsTrue()
-func (s *String) AsBoolean() *Boolean {
-	opChain := s.chain.enter("AsBoolean()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newBoolean(opChain, false)
-	}
-
-	switch s.value {
-	case "true", "True":
-		return newBoolean(opChain, true)
-
-	case "false", "False":
-		return newBoolean(opChain, false)
-	}
-
-	opChain.fail(AssertionFailure{
-		Type:   AssertValid,
-		Actual: &AssertionValue{s.value},
-		Errors: []error{
-			errors.New("expected: string can be parsed to boolean"),
-		},
-	})
-
-	return newBoolean(opChain, false)
-}
+func (s *String) AsBoolean() *Boolean { _ = "STUB: not implemented"; return nil }
 
 // AsDateTime parses date/time from string and returns a new DateTime instance
 // with result.
@@ -1244,101 +390,17 @@ func (s *String) AsBoolean() *Boolean {
 //
 //	str := NewString(t, "15 Nov 94 08:12 GMT")
 //	str.AsDateTime(time.RFC822).IsLt(time.Now())
-func (s *String) AsDateTime(format ...string) *DateTime {
-	opChain := s.chain.enter("AsDateTime()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newDateTime(opChain, time.Unix(0, 0))
-	}
-
-	var formatList []datetimeFormat
-
-	if len(format) != 0 {
-		for _, f := range format {
-			formatList = append(formatList, datetimeFormat{layout: f})
-		}
-	} else {
-		formatList = []datetimeFormat{
-			{http.TimeFormat, "RFC1123+GMT"},
-
-			{time.RFC850, "RFC850"},
-
-			{time.ANSIC, "ANSIC"},
-			{time.UnixDate, "Unix"},
-			{time.RubyDate, "Ruby"},
-
-			{time.RFC1123, "RFC1123"},
-			{time.RFC1123Z, "RFC1123Z"},
-			{time.RFC822, "RFC822"},
-			{time.RFC822Z, "RFC822Z"},
-			{time.RFC3339, "RFC3339"},
-			{time.RFC3339Nano, "RFC3339+nano"},
-		}
-	}
-
-	var (
-		tm  time.Time
-		err error
-	)
-	for _, f := range formatList {
-		tm, err = time.Parse(f.layout, s.value)
-		if err == nil {
-			break
-		}
-	}
-
-	if err != nil {
-		if len(formatList) == 1 {
-			opChain.fail(AssertionFailure{
-				Type:     AssertMatchFormat,
-				Actual:   &AssertionValue{s.value},
-				Expected: &AssertionValue{formatList[0]},
-				Errors: []error{
-					errors.New("expected: string can be parsed to datetime" +
-						" with given format"),
-				},
-			})
-		} else {
-			var expectedFormats []interface{}
-			for _, f := range formatList {
-				expectedFormats = append(expectedFormats, f)
-			}
-			opChain.fail(AssertionFailure{
-				Type:     AssertMatchFormat,
-				Actual:   &AssertionValue{s.value},
-				Expected: &AssertionValue{AssertionList(expectedFormats)},
-				Errors: []error{
-					errors.New("expected: string can be parsed to datetime" +
-						" with one of the formats from list"),
-				},
-			})
-		}
-		return newDateTime(opChain, time.Unix(0, 0))
-	}
-
-	return newDateTime(opChain, tm)
-}
+func (s *String) AsDateTime(format ...string) *DateTime { _ = "STUB: not implemented"; return nil }
 
 type datetimeFormat struct {
 	layout string
 	name   string
 }
 
-func (f datetimeFormat) String() string {
-	if f.name != "" {
-		return fmt.Sprintf("%q (%s)", f.layout, f.name)
-	} else {
-		return fmt.Sprintf("%q", f.layout)
-	}
-}
+func (f datetimeFormat) String() string { _ = "STUB: not implemented"; return "" }
 
 // Deprecated: use AsNumber instead.
-func (s *String) Number() *Number {
-	return s.AsNumber()
-}
+func (s *String) Number() *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use AsDateTime instead.
-func (s *String) DateTime(layout ...string) *DateTime {
-	return s.AsDateTime(layout...)
-}
+func (s *String) DateTime(layout ...string) *DateTime { _ = "STUB: not implemented"; return nil }

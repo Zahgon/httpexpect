@@ -1,28 +1,15 @@
 package httpexpect
 
 import (
-	"bytes"
 	"encoding/json"
-	"flag"
-	"fmt"
-	"math"
-	"net/http/httputil"
-	"os"
-	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
-	"testing"
 	"text/template"
 
 	"github.com/TylerBrock/colorjson"
 	"github.com/fatih/color"
-	"github.com/mattn/go-isatty"
 	"github.com/mitchellh/go-wordwrap"
-	"github.com/sanity-io/litter"
-	"github.com/yudai/gojsondiff"
-	"github.com/yudai/gojsondiff/formatter"
 )
 
 // Formatter is used to format assertion messages into strings.
@@ -97,26 +84,16 @@ type DefaultFormatter struct {
 
 // FormatSuccess implements Formatter.FormatSuccess.
 func (f *DefaultFormatter) FormatSuccess(ctx *AssertionContext) string {
-	if f.SuccessTemplate != "" {
-		return f.applyTemplate("SuccessTemplate",
-			f.SuccessTemplate, f.TemplateFuncs, ctx, nil)
-	} else {
-		return f.applyTemplate("SuccessTemplate",
-			defaultSuccessTemplate, defaultTemplateFuncs, ctx, nil)
-	}
+	_ = "STUB: not implemented"
+	return ""
 }
 
 // FormatFailure implements Formatter.FormatFailure.
 func (f *DefaultFormatter) FormatFailure(
 	ctx *AssertionContext, failure *AssertionFailure,
 ) string {
-	if f.FailureTemplate != "" {
-		return f.applyTemplate("FailureTemplate",
-			f.FailureTemplate, f.TemplateFuncs, ctx, failure)
-	} else {
-		return f.applyTemplate("FailureTemplate",
-			defaultFailureTemplate, defaultTemplateFuncs, ctx, failure)
-	}
+	_ = "STUB: not implemented"
+	return ""
 }
 
 // DigitSeparator defines the separator used to format integers and floats.
@@ -258,512 +235,134 @@ func (f *DefaultFormatter) applyTemplate(
 	ctx *AssertionContext,
 	failure *AssertionFailure,
 ) string {
-	templateData := f.buildFormatData(ctx, failure)
-
-	t, err := template.New(templateName).Funcs(templateFuncs).Parse(templateString)
-	if err != nil {
-		panic(err)
-	}
-
-	var b bytes.Buffer
-
-	err = t.Execute(&b, templateData)
-	if err != nil {
-		panic(err)
-	}
-
-	return b.String()
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (f *DefaultFormatter) buildFormatData(
 	ctx *AssertionContext, failure *AssertionFailure,
 ) *FormatData {
-	data := FormatData{}
-
-	f.fillGeneral(&data, ctx)
-
-	if failure != nil {
-		data.AssertType = failure.Type.String()
-		data.AssertSeverity = failure.Severity.String()
-
-		f.fillErrors(&data, ctx, failure)
-
-		if failure.Actual != nil {
-			f.fillActual(&data, ctx, failure)
-		}
-
-		if failure.Expected != nil {
-			f.fillExpected(&data, ctx, failure)
-			f.fillIsNegation(&data, ctx, failure)
-			f.fillIsComparison(&data, ctx, failure)
-		}
-
-		if failure.Reference != nil {
-			f.fillReference(&data, ctx, failure)
-		}
-
-		if failure.Delta != nil {
-			f.fillDelta(&data, ctx, failure)
-		}
-
-		f.fillRequest(&data, ctx, failure)
-		f.fillResponse(&data, ctx, failure)
-		f.fillStacktrace(&data, ctx, failure)
-	}
-
-	return &data
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (f *DefaultFormatter) fillGeneral(
 	data *FormatData, ctx *AssertionContext,
 ) {
-	if !f.DisableNames {
-		data.TestName = ctx.TestName
-		data.RequestName = ctx.RequestName
-	}
-
-	if !f.DisablePaths {
-		if !f.DisableAliases {
-			data.AssertPath = ctx.AliasedPath
-		} else {
-			data.AssertPath = ctx.Path
-		}
-	}
-
-	switch f.ColorMode {
-	case ColorModeAuto:
-		switch colorMode() {
-		case colorsUnsupported:
-			data.EnableColors = false
-		case colorsForced:
-			data.EnableColors = true
-		case colorsSupported:
-			data.EnableColors = ctx.TestingTB && flag.Parsed() && testing.Verbose()
-		}
-	case ColorModeAlways:
-		data.EnableColors = true
-	case ColorModeNever:
-		data.EnableColors = false
-	}
-
-	if f.LineWidth != 0 {
-		data.LineWidth = f.LineWidth
-	} else {
-		data.LineWidth = defaultLineWidth
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillErrors(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	data.Errors = []string{}
-
-	for _, err := range failure.Errors {
-		if refIsNil(err) {
-			continue
-		}
-		data.Errors = append(data.Errors, err.Error())
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillActual(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	switch failure.Type { //nolint
-	case AssertUsage, AssertOperation:
-		data.HaveActual = false
-
-	case AssertType, AssertNotType:
-		data.HaveActual = true
-		data.Actual = f.formatTypedValue(failure.Actual.Value)
-
-	default:
-		data.HaveActual = true
-		data.Actual = f.formatValue(failure.Actual.Value)
-	}
+	_ = "STUB: not implemented"
+	return
+	//nolint
 }
 
 func (f *DefaultFormatter) fillExpected(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	switch failure.Type {
-	case AssertUsage, AssertOperation,
-		AssertType, AssertNotType,
-		AssertValid, AssertNotValid,
-		AssertNil, AssertNotNil,
-		AssertEmpty, AssertNotEmpty,
-		AssertNotEqual:
-		data.HaveExpected = false
-
-	case AssertEqual:
-		data.HaveExpected = true
-		data.ExpectedKind = kindValue
-		data.Expected = []string{
-			f.formatValue(failure.Expected.Value),
-		}
-
-		if !f.DisableDiffs && failure.Actual != nil && failure.Expected != nil {
-			data.Diff, data.HaveDiff = f.formatDiff(
-				failure.Expected.Value, failure.Actual.Value)
-		}
-
-	case AssertLt, AssertLe, AssertGt, AssertGe:
-		data.HaveExpected = true
-		data.ExpectedKind = kindValue
-		data.Expected = []string{
-			f.formatValue(failure.Expected.Value),
-		}
-
-	case AssertInRange, AssertNotInRange:
-		data.HaveExpected = true
-		data.ExpectedKind = kindRange
-		data.Expected = f.formatRangeValue(failure.Expected.Value)
-
-	case AssertMatchSchema, AssertNotMatchSchema:
-		data.HaveExpected = true
-		data.ExpectedKind = kindSchema
-		data.Expected = []string{
-			f.formatMatchValue(failure.Expected.Value),
-		}
-
-	case AssertMatchPath, AssertNotMatchPath:
-		data.HaveExpected = true
-		data.ExpectedKind = kindPath
-		data.Expected = []string{
-			f.formatMatchValue(failure.Expected.Value),
-		}
-
-	case AssertMatchRegexp, AssertNotMatchRegexp:
-		data.HaveExpected = true
-		data.ExpectedKind = kindRegexp
-		data.Expected = []string{
-			f.formatMatchValue(failure.Expected.Value),
-		}
-
-	case AssertMatchFormat, AssertNotMatchFormat:
-		data.HaveExpected = true
-		if extractList(failure.Expected.Value) != nil {
-			data.ExpectedKind = kindFormatList
-		} else {
-			data.ExpectedKind = kindFormat
-		}
-		data.Expected = f.formatListValue(failure.Expected.Value)
-
-	case AssertContainsKey, AssertNotContainsKey:
-		data.HaveExpected = true
-		data.ExpectedKind = kindKey
-		data.Expected = []string{
-			f.formatValue(failure.Expected.Value),
-		}
-
-	case AssertContainsElement, AssertNotContainsElement:
-		data.HaveExpected = true
-		data.ExpectedKind = kindElement
-		data.Expected = []string{
-			f.formatValue(failure.Expected.Value),
-		}
-
-	case AssertContainsSubset, AssertNotContainsSubset:
-		data.HaveExpected = true
-		data.ExpectedKind = kindSubset
-		data.Expected = []string{
-			f.formatValue(failure.Expected.Value),
-		}
-
-	case AssertBelongs, AssertNotBelongs:
-		data.HaveExpected = true
-		data.ExpectedKind = kindValueList
-		data.Expected = f.formatListValue(failure.Expected.Value)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillIsNegation(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	switch failure.Type {
-	case AssertUsage, AssertOperation,
-		AssertType,
-		AssertValid,
-		AssertNil,
-		AssertEmpty,
-		AssertEqual,
-		AssertLt, AssertLe, AssertGt, AssertGe,
-		AssertInRange,
-		AssertMatchSchema,
-		AssertMatchPath,
-		AssertMatchRegexp,
-		AssertMatchFormat,
-		AssertContainsKey,
-		AssertContainsElement,
-		AssertContainsSubset,
-		AssertBelongs:
-		break
-
-	case AssertNotType,
-		AssertNotValid,
-		AssertNotNil,
-		AssertNotEmpty,
-		AssertNotEqual,
-		AssertNotInRange,
-		AssertNotMatchSchema,
-		AssertNotMatchPath,
-		AssertNotMatchRegexp,
-		AssertNotMatchFormat,
-		AssertNotContainsKey,
-		AssertNotContainsElement,
-		AssertNotContainsSubset,
-		AssertNotBelongs:
-		data.IsNegation = true
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillIsComparison(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	switch failure.Type { //nolint
-	case AssertLt, AssertLe, AssertGt, AssertGe:
-		data.IsComparison = true
-	}
+	_ = "STUB: not implemented"
+	return
+	//nolint
 }
 
 func (f *DefaultFormatter) fillReference(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	data.HaveReference = true
-	data.Reference = f.formatValue(failure.Reference.Value)
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillDelta(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	data.HaveDelta = true
-	data.Delta = f.formatValue(failure.Delta.Value)
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillRequest(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	if !f.DisableRequests && ctx.Request != nil && ctx.Request.httpReq != nil {
-		dump, err := httputil.DumpRequest(ctx.Request.httpReq, false)
-		if err != nil {
-			return
-		}
-
-		data.HaveRequest = true
-		data.Request = string(dump)
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillResponse(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	if !f.DisableResponses && ctx.Response != nil && ctx.Response.httpResp != nil {
-		dump, err := httputil.DumpResponse(ctx.Response.httpResp, false)
-		if err != nil {
-			return
-		}
-
-		text := strings.Replace(string(dump), "\r\n", "\n", -1)
-		lines := strings.SplitN(text, "\n", 2)
-
-		data.HaveResponse = true
-		data.Response = fmt.Sprintf("%s %s\n%s", lines[0], ctx.Response.rtt, lines[1])
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) fillStacktrace(
 	data *FormatData, ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	data.Stacktrace = []string{}
-
-	switch f.StacktraceMode {
-	case StacktraceModeDisabled:
-		break
-
-	case StacktraceModeStandard:
-		for _, entry := range failure.Stacktrace {
-			data.HaveStacktrace = true
-			data.Stacktrace = append(data.Stacktrace,
-				fmt.Sprintf("%s()\n\t%s:%d +0x%x",
-					entry.Func.Name(), entry.File, entry.Line, entry.FuncOffset))
-
-		}
-
-	case StacktraceModeCompact:
-		for _, entry := range failure.Stacktrace {
-			if entry.IsEntrypoint {
-				break
-			}
-			data.HaveStacktrace = true
-			data.Stacktrace = append(data.Stacktrace,
-				fmt.Sprintf("%s() at %s:%d (%s)",
-					entry.FuncName, filepath.Base(entry.File), entry.Line, entry.FuncPackage))
-
-		}
-	}
+	_ = "STUB: not implemented"
+	return
 }
 
 func (f *DefaultFormatter) formatValue(value interface{}) string {
-	if flt := extractFloat32(value); flt != nil {
-		return f.reformatNumber(f.formatFloatValue(*flt, 32))
-	}
-
-	if flt := extractFloat64(value); flt != nil {
-		return f.reformatNumber(f.formatFloatValue(*flt, 64))
-	}
-
-	if refIsNum(value) {
-		return f.reformatNumber(fmt.Sprintf("%v", value))
-	}
-
-	if !refIsNil(value) && !refIsHTTP(value) {
-		if s, _ := value.(fmt.Stringer); s != nil {
-			if ss := s.String(); strings.TrimSpace(ss) != "" {
-				return ss
-			}
-		}
-		if b, err := json.MarshalIndent(value, "", defaultIndent); err == nil {
-			return string(b)
-		}
-	}
-
-	sq := litter.Options{
-		Separator: defaultIndent,
-	}
-	return sq.Sdump(value)
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (f *DefaultFormatter) formatFloatValue(value float64, bits int) string {
-	switch f.FloatFormat {
-	case FloatFormatAuto:
-		if _, frac := math.Modf(value); frac != 0 {
-			return strconv.FormatFloat(value, 'g', -1, bits)
-		} else {
-			return strconv.FormatFloat(value, 'f', -1, bits)
-		}
-
-	case FloatFormatDecimal:
-		return strconv.FormatFloat(value, 'f', -1, bits)
-
-	case FloatFormatScientific:
-		return strconv.FormatFloat(value, 'e', -1, bits)
-
-	default:
-		return fmt.Sprintf("%v", value)
-	}
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (f *DefaultFormatter) formatTypedValue(value interface{}) string {
-	if refIsNum(value) {
-		return fmt.Sprintf("%T(%v)", value, f.formatValue(value))
-	}
-
-	return fmt.Sprintf("%T(%#v)", value, value)
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (f *DefaultFormatter) formatMatchValue(value interface{}) string {
-	if str := extractString(value); str != nil {
-		return *str
-	}
-
-	return f.formatValue(value)
+	_ = "STUB: not implemented"
+	return ""
 }
 
 func (f *DefaultFormatter) formatRangeValue(value interface{}) []string {
-	if rng := exctractRange(value); rng != nil {
-		if refIsNum(rng.Min) && refIsNum(rng.Max) {
-			return []string{
-				fmt.Sprintf("[%v; %v]", f.formatValue(rng.Min), f.formatValue(rng.Max)),
-			}
-		} else {
-			return []string{
-				fmt.Sprintf("%v", rng.Min),
-				fmt.Sprintf("%v", rng.Max),
-			}
-		}
-	} else {
-		return []string{
-			f.formatValue(value),
-		}
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (f *DefaultFormatter) formatListValue(value interface{}) []string {
-	if lst := extractList(value); lst != nil {
-		s := make([]string, 0, len(*lst))
-		for _, e := range *lst {
-			s = append(s, f.formatValue(e))
-		}
-		return s
-	} else {
-		return []string{
-			f.formatValue(value),
-		}
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (f *DefaultFormatter) formatDiff(expected, actual interface{}) (string, bool) {
-	differ := gojsondiff.New()
-
-	var diff gojsondiff.Diff
-
-	if ve, ok := expected.(map[string]interface{}); ok {
-		if va, ok := actual.(map[string]interface{}); ok {
-			diff = differ.CompareObjects(ve, va)
-		} else {
-			return "", false
-		}
-	} else if ve, ok := expected.([]interface{}); ok {
-		if va, ok := actual.([]interface{}); ok {
-			diff = differ.CompareArrays(ve, va)
-		} else {
-			return "", false
-		}
-	} else {
-		return "", false
-	}
-
-	if !diff.Modified() {
-		return "", false
-	}
-
-	config := formatter.AsciiFormatterConfig{
-		ShowArrayIndex: true,
-	}
-	fa := formatter.NewAsciiFormatter(expected, config)
-
-	str, err := fa.Format(diff)
-	if err != nil {
-		return "", false
-	}
-
-	diffText := "--- expected\n+++ actual\n" + str
-
-	return diffText, true
+	_ = "STUB: not implemented"
+	return "", false
 }
 
 func (f *DefaultFormatter) reformatNumber(numStr string) string {
-	signPart, intPart, fracPart, expPart := f.decomposeNumber(numStr)
-	if intPart == "" {
-		return numStr
-	}
-
-	var sb strings.Builder
-
-	sb.WriteString(signPart)
-	sb.WriteString(f.applySeparator(intPart, -1))
-
-	if fracPart != "" {
-		sb.WriteString(".")
-		sb.WriteString(f.applySeparator(fracPart, +1))
-	}
-
-	if expPart != "" {
-		sb.WriteString("e")
-		sb.WriteString(expPart)
-	}
-
-	return sb.String()
+	_ = "STUB: not implemented"
+	return ""
 }
 
 var (
@@ -773,109 +372,28 @@ var (
 func (f *DefaultFormatter) decomposeNumber(numStr string) (
 	signPart, intPart, fracPart, expPart string,
 ) {
-	parts := decomposeRegexp.FindStringSubmatch(numStr)
-
-	if len(parts) > 1 {
-		signPart = parts[1]
-	}
-	if len(parts) > 2 {
-		intPart = parts[2]
-	}
-	if len(parts) > 4 {
-		fracPart = parts[4]
-	}
-	if len(parts) > 6 {
-		expPart = parts[6]
-	}
-
-	return
+	_ = "STUB: not implemented"
+	return "", "", "", ""
 }
 
 func (f *DefaultFormatter) applySeparator(numStr string, dir int) string {
-	var separator string
-	switch f.DigitSeparator {
-	case DigitSeparatorUnderscore:
-		separator = "_"
-		break
-	case DigitSeparatorApostrophe:
-		separator = "'"
-		break
-	case DigitSeparatorComma:
-		separator = ","
-		break
-	case DigitSeparatorNone:
-	default:
-		return numStr
-	}
-
-	var sb strings.Builder
-
-	cnt := 0
-	if dir < 0 {
-		cnt = len(numStr)
-	}
-
-	for i := 0; i != len(numStr); i++ {
-		sb.WriteByte(numStr[i])
-
-		cnt += dir
-		if cnt%3 == 0 && i != len(numStr)-1 {
-			sb.WriteString(separator)
-		}
-	}
-
-	return sb.String()
+	_ = "STUB: not implemented"
+	return ""
 }
 
-func extractString(value interface{}) *string {
-	switch s := value.(type) {
-	case string:
-		return &s
-	default:
-		return nil
-	}
-}
+func extractString(value interface{}) *string { _ = "STUB: not implemented"; return nil }
 
-func extractFloat32(value interface{}) *float64 {
-	switch f := value.(type) {
-	case float32:
-		ff := float64(f)
-		return &ff
-	default:
-		return nil
-	}
-}
+func extractFloat32(value interface{}) *float64 { _ = "STUB: not implemented"; return nil }
 
-func extractFloat64(value interface{}) *float64 {
-	switch f := value.(type) {
-	case float64:
-		return &f
-	default:
-		return nil
-	}
-}
+func extractFloat64(value interface{}) *float64 { _ = "STUB: not implemented"; return nil }
 
-func exctractRange(value interface{}) *AssertionRange {
-	switch rng := value.(type) {
-	case AssertionRange:
-		return &rng
-	case *AssertionRange: // invalid, but we handle it
-		return rng
-	default:
-		return nil
-	}
-}
+func exctractRange(value interface{}) *AssertionRange { _ = "STUB: not implemented"; return nil }
 
-func extractList(value interface{}) *AssertionList {
-	switch lst := value.(type) {
-	case AssertionList:
-		return &lst
-	case *AssertionList: // invalid, but we handle it
-		return lst
-	default:
-		return nil
-	}
-}
+// invalid, but we handle it
+
+func extractList(value interface{}) *AssertionList { _ = "STUB: not implemented"; return nil }
+
+// invalid, but we handle it
 
 var (
 	colorsSupportedOnce sync.Once
@@ -888,28 +406,7 @@ const (
 	colorsForced
 )
 
-func colorMode() int {
-	colorsSupportedOnce.Do(func() {
-		if s := os.Getenv("FORCE_COLOR"); len(s) != 0 {
-			if n, err := strconv.Atoi(s); err == nil && n > 0 {
-				colorsSupportedMode = colorsForced
-				return
-			}
-		}
-
-		if (isatty.IsTerminal(os.Stdout.Fd()) || isatty.IsCygwinTerminal(os.Stdout.Fd())) &&
-			len(os.Getenv("NO_COLOR")) == 0 &&
-			!strings.HasPrefix(os.Getenv("TERM"), "dumb") {
-			colorsSupportedMode = colorsSupported
-			return
-		}
-
-		colorsSupportedMode = colorsUnsupported
-		return
-	})
-
-	return colorsSupportedMode
-}
+func colorMode() int { _ = "STUB: not implemented"; return 0 }
 
 const (
 	defaultIndent    = "  "

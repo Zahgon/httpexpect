@@ -2,23 +2,15 @@
 
 package httpexpect
 
-import "strconv"
-
 func _() {
+	_ = "STUB: not implemented"
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
-	var x [1]struct{}
-	_ = x[SeverityError-0]
-	_ = x[SeverityLog-1]
+	return
 }
 
 const _AssertionSeverity_name = "SeverityErrorSeverityLog"
 
 var _AssertionSeverity_index = [...]uint8{0, 13, 24}
 
-func (i AssertionSeverity) String() string {
-	if i >= AssertionSeverity(len(_AssertionSeverity_index)-1) {
-		return "AssertionSeverity(" + strconv.FormatInt(int64(i), 10) + ")"
-	}
-	return _AssertionSeverity_name[_AssertionSeverity_index[i]:_AssertionSeverity_index[i+1]]
-}
+func (i AssertionSeverity) String() string { _ = "STUB: not implemented"; return "" }

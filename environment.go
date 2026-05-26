@@ -1,12 +1,8 @@
 package httpexpect
 
 import (
-	"errors"
-	"sort"
 	"sync"
 	"time"
-
-	"github.com/gobwas/glob"
 )
 
 // Environment provides a container for arbitrary data shared between tests.
@@ -29,9 +25,7 @@ type Environment struct {
 // Example:
 //
 //	env := NewEnvironment(t)
-func NewEnvironment(reporter Reporter) *Environment {
-	return newEnvironment(newChainWithDefaults("Environment()", reporter))
-}
+func NewEnvironment(reporter Reporter) *Environment { _ = "STUB: not implemented"; return nil }
 
 // NewEnvironmentC returns a new Environment with config.
 //
@@ -40,16 +34,9 @@ func NewEnvironment(reporter Reporter) *Environment {
 // Example:
 //
 //	env := NewEnvironmentC(config)
-func NewEnvironmentC(config Config) *Environment {
-	return newEnvironment(newChainWithConfig("Environment()", config.withDefaults()))
-}
+func NewEnvironmentC(config Config) *Environment { _ = "STUB: not implemented"; return nil }
 
-func newEnvironment(parent *chain) *Environment {
-	return &Environment{
-		chain: parent.clone(),
-		data:  make(map[string]interface{}),
-	}
-}
+func newEnvironment(parent *chain) *Environment { _ = "STUB: not implemented"; return nil }
 
 // Put saves the value with key in the environment.
 //
@@ -58,15 +45,7 @@ func newEnvironment(parent *chain) *Environment {
 //	env := NewEnvironment(t)
 //	env.Put("key1", "str")
 //	env.Put("key2", 123)
-func (e *Environment) Put(key string, value interface{}) {
-	opChain := e.chain.enter("Put(%q)", key)
-	defer opChain.leave()
-
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	e.data[key] = value
-}
+func (e *Environment) Put(key string, value interface{}) { _ = "STUB: not implemented"; return }
 
 // Delete removes the value with key from the environment.
 //
@@ -75,15 +54,7 @@ func (e *Environment) Put(key string, value interface{}) {
 //	env := NewEnvironment(t)
 //	env.Put("key1", "str")
 //	env.Delete("key1")
-func (e *Environment) Delete(key string) {
-	opChain := e.chain.enter("Delete(%q)", key)
-	defer opChain.leave()
-
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	delete(e.data, key)
-}
+func (e *Environment) Delete(key string) { _ = "STUB: not implemented"; return }
 
 // Clear will delete all key value pairs from the environment
 //
@@ -93,15 +64,7 @@ func (e *Environment) Delete(key string) {
 //	env.Put("key1", 123)
 //	env.Put("key2", 456)
 //	env.Clear()
-func (e *Environment) Clear() {
-	opChain := e.chain.enter("Clear()")
-	defer opChain.leave()
-
-	e.mu.Lock()
-	defer e.mu.Unlock()
-
-	e.data = make(map[string]interface{})
-}
+func (e *Environment) Clear() { _ = "STUB: not implemented"; return }
 
 // Has returns true if value exists in the environment.
 //
@@ -110,16 +73,7 @@ func (e *Environment) Clear() {
 //	if env.Has("key1") {
 //	   ...
 //	}
-func (e *Environment) Has(key string) bool {
-	opChain := e.chain.enter("Has(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	_, ok := e.data[key]
-	return ok
-}
+func (e *Environment) Has(key string) bool { _ = "STUB: not implemented"; return false }
 
 // Get returns value stored in the environment.
 //
@@ -129,17 +83,7 @@ func (e *Environment) Has(key string) bool {
 //
 //	value1 := env.Get("key1").(string)
 //	value2 := env.Get("key1").(int)
-func (e *Environment) Get(key string) interface{} {
-	opChain := e.chain.enter("Get(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, _ := envValue(opChain, e.data, key)
-
-	return value
-}
+func (e *Environment) Get(key string) interface{} { _ = "STUB: not implemented"; return nil }
 
 // GetBool returns value stored in the environment, casted to bool.
 //
@@ -148,32 +92,7 @@ func (e *Environment) Get(key string) interface{} {
 // Example:
 //
 //	value := env.GetBool("key")
-func (e *Environment) GetBool(key string) bool {
-	opChain := e.chain.enter("GetBool(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return false
-	}
-
-	casted, ok := value.(bool)
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: bool value"),
-			},
-		})
-		return false
-	}
-
-	return casted
-}
+func (e *Environment) GetBool(key string) bool { _ = "STUB: not implemented"; return false }
 
 // GetInt returns value stored in the environment, casted to int64.
 //
@@ -183,85 +102,9 @@ func (e *Environment) GetBool(key string) bool {
 // Example:
 //
 //	value := env.GetInt("key")
-func (e *Environment) GetInt(key string) int {
-	opChain := e.chain.enter("GetInt(%q)", key)
-	defer opChain.leave()
+func (e *Environment) GetInt(key string) int { _ = "STUB: not implemented"; return 0 }
 
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return 0
-	}
-
-	var casted int
-
-	const (
-		intSize = 32 << (^uint(0) >> 63) // 32 or 64
-		maxInt  = 1<<(intSize-1) - 1
-		minInt  = -1 << (intSize - 1)
-	)
-
-	switch num := value.(type) {
-	case int8:
-		casted = int(num)
-		ok = (int64(num) >= minInt) && (int64(num) <= maxInt)
-	case int16:
-		casted = int(num)
-		ok = (int64(num) >= minInt) && (int64(num) <= maxInt)
-	case int32:
-		casted = int(num)
-		ok = (int64(num) >= minInt) && (int64(num) <= maxInt)
-	case int64:
-		casted = int(num)
-		ok = (int64(num) >= minInt) && (int64(num) <= maxInt)
-	case int:
-		casted = num
-		ok = (int64(num) >= minInt) && (int64(num) <= maxInt)
-
-	case uint8:
-		casted = int(num)
-		ok = (uint64(num) <= maxInt)
-	case uint16:
-		casted = int(num)
-		ok = (uint64(num) <= maxInt)
-	case uint32:
-		casted = int(num)
-		ok = (uint64(num) <= maxInt)
-	case uint64:
-		casted = int(num)
-		ok = (uint64(num) <= maxInt)
-	case uint:
-		casted = int(num)
-		ok = (uint64(num) <= maxInt)
-
-	default:
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: signed or unsigned integer"),
-			},
-		})
-		return 0
-	}
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:     AssertInRange,
-			Actual:   &AssertionValue{value},
-			Expected: &AssertionValue{AssertionRange{minInt, maxInt}},
-			Errors: []error{
-				errors.New(
-					"expected: value can be represented as int without overflow"),
-			},
-		})
-		return 0
-	}
-
-	return casted
-}
+// 32 or 64
 
 // GetFloat returns value stored in the environment, casted to float64.
 //
@@ -271,40 +114,7 @@ func (e *Environment) GetInt(key string) int {
 // Example:
 //
 //	value := env.GetFloat("key")
-func (e *Environment) GetFloat(key string) float64 {
-	opChain := e.chain.enter("GetFloat(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return 0
-	}
-
-	var casted float64
-
-	switch num := value.(type) {
-	case float32:
-		casted = float64(num)
-
-	case float64:
-		casted = num
-
-	default:
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: float32 or float64"),
-			},
-		})
-		return 0
-	}
-
-	return casted
-}
+func (e *Environment) GetFloat(key string) float64 { _ = "STUB: not implemented"; return 0 }
 
 // GetString returns value stored in the environment, casted to string.
 //
@@ -314,32 +124,7 @@ func (e *Environment) GetFloat(key string) float64 {
 // Example:
 //
 //	value := env.GetString("key")
-func (e *Environment) GetString(key string) string {
-	opChain := e.chain.enter("GetString(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return ""
-	}
-
-	casted, ok := value.(string)
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: string value"),
-			},
-		})
-		return ""
-	}
-
-	return casted
-}
+func (e *Environment) GetString(key string) string { _ = "STUB: not implemented"; return "" }
 
 // GetBytes returns value stored in the environment, casted to []byte.
 //
@@ -348,32 +133,7 @@ func (e *Environment) GetString(key string) string {
 // Example:
 //
 //	value := env.GetBytes("key")
-func (e *Environment) GetBytes(key string) []byte {
-	opChain := e.chain.enter("GetBytes(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return nil
-	}
-
-	casted, ok := value.([]byte)
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: []byte slice"),
-			},
-		})
-		return nil
-	}
-
-	return casted
-}
+func (e *Environment) GetBytes(key string) []byte { _ = "STUB: not implemented"; return nil }
 
 // GetDuration returns value stored in the environment, casted to time.Duration.
 //
@@ -384,30 +144,8 @@ func (e *Environment) GetBytes(key string) []byte {
 //
 //	value := env.GetDuration("key")
 func (e *Environment) GetDuration(key string) time.Duration {
-	opChain := e.chain.enter("GetDuration(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return time.Duration(0)
-	}
-
-	casted, ok := value.(time.Duration)
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: time.Duration value"),
-			},
-		})
-		return time.Duration(0)
-	}
-
-	return casted
+	_ = "STUB: not implemented"
+	return *new(time.Duration)
 }
 
 // GetTime returns value stored in the environment, casted to time.Time.
@@ -419,30 +157,8 @@ func (e *Environment) GetDuration(key string) time.Duration {
 //
 //	value := env.GetTime("key")
 func (e *Environment) GetTime(key string) time.Time {
-	opChain := e.chain.enter("GetTime(%q)", key)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	value, ok := envValue(opChain, e.data, key)
-	if !ok {
-		return time.Unix(0, 0)
-	}
-
-	casted, ok := value.(time.Time)
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertType,
-			Actual: &AssertionValue{value},
-			Errors: []error{
-				errors.New("expected: time.Time value"),
-			},
-		})
-		return time.Unix(0, 0)
-	}
-
-	return casted
+	_ = "STUB: not implemented"
+	return *new(time.Time)
 }
 
 // List returns a sorted slice of keys.
@@ -454,24 +170,7 @@ func (e *Environment) GetTime(key string) time.Time {
 //	for _, key := range env.List() {
 //		...
 //	}
-func (e *Environment) List() []string {
-	opChain := e.chain.enter("List()")
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	keys := []string{}
-
-	for key := range e.data {
-		keys = append(keys, key)
-	}
-
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	return keys
-}
+func (e *Environment) List() []string { _ = "STUB: not implemented"; return nil }
 
 // Glob accepts a glob pattern and returns a sorted slice of
 // keys that match the pattern.
@@ -486,51 +185,9 @@ func (e *Environment) List() []string {
 //	for _, key := range env.Glob("foo.*") {
 //		...
 //	}
-func (e *Environment) Glob(pattern string) []string {
-	opChain := e.chain.enter("Glob(%q)", pattern)
-	defer opChain.leave()
-
-	e.mu.RLock()
-	defer e.mu.RUnlock()
-
-	glb, err := glob.Compile(pattern)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected invalid glob pattern"),
-			},
-		})
-		return []string{}
-	}
-
-	keys := []string{}
-	for key := range e.data {
-		if glb.Match(key) {
-			keys = append(keys, key)
-		}
-	}
-
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-	return keys
-}
+func (e *Environment) Glob(pattern string) []string { _ = "STUB: not implemented"; return nil }
 
 func envValue(chain *chain, env map[string]interface{}, key string) (interface{}, bool) {
-	v, ok := env[key]
-
-	if !ok {
-		chain.fail(AssertionFailure{
-			Type:     AssertContainsKey,
-			Actual:   &AssertionValue{env},
-			Expected: &AssertionValue{key},
-			Errors: []error{
-				errors.New("expected: environment contains key"),
-			},
-		})
-		return nil, false
-	}
-
-	return v, true
+	_ = "STUB: not implemented"
+	return nil, false
 }

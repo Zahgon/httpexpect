@@ -1,10 +1,5 @@
 package httpexpect
 
-import (
-	"errors"
-	"reflect"
-)
-
 // Value provides methods to inspect attached interface{} object
 // (Go representation of arbitrary JSON value) and cast it to
 // concrete type.
@@ -37,9 +32,7 @@ type Value struct {
 //
 //	value := NewValue(t, nil)
 //	value.IsNull()
-func NewValue(reporter Reporter, value interface{}) *Value {
-	return newValue(newChainWithDefaults("Value()", reporter), value)
-}
+func NewValue(reporter Reporter, value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // NewValueC returns a new Value instance with config.
 //
@@ -47,22 +40,9 @@ func NewValue(reporter Reporter, value interface{}) *Value {
 // Value may be nil.
 //
 // See NewValue for usage example.
-func NewValueC(config Config, value interface{}) *Value {
-	return newValue(newChainWithConfig("Value()", config.withDefaults()), value)
-}
+func NewValueC(config Config, value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
-func newValue(parent *chain, val interface{}) *Value {
-	v := &Value{parent.clone(), nil}
-
-	opChain := v.chain.enter("")
-	defer opChain.leave()
-
-	if val != nil {
-		v.value, _ = canonValue(opChain, val)
-	}
-
-	return v
-}
+func newValue(parent *chain, val interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // Raw returns underlying value attached to Value.
 // This is the value originally passed to NewValue, converted to canonical form.
@@ -72,43 +52,35 @@ func newValue(parent *chain, val interface{}) *Value {
 //	value := NewValue(t, "foo")
 //	assert.Equal(t, "foo", number.Raw().(string))
 func (v *Value) Raw() interface{} {
-	return v.value
+	_ = "STUB: not implemented"
+
+	// Decode unmarshals the underlying value attached to the Object to a target variable
+	// target should be pointer to any type.
+	//
+	// Example:
+	//
+	//	type S struct {
+	//		Foo int             `json:"foo"`
+	//		Bar []interface{}   `json:"bar"`
+	//		Baz struct{ A int } `json:"baz"`
+	//	}
+	//
+	//	m := map[string]interface{}{
+	//		"foo": 123,
+	//		"bar": []interface{}{"123", 456.0},
+	//		"baz": struct{ A int }{123},
+	//	}
+	//
+	//	value = NewValue(reporter,m)
+	//
+	//	var target S
+	//	value.Decode(&target)
+	//
+	//	assert.Equal(t, S{123, []interface{}{"123", 456.0}, struct{ A int }{123}, target})
+	return nil
 }
 
-// Decode unmarshals the underlying value attached to the Object to a target variable
-// target should be pointer to any type.
-//
-// Example:
-//
-//	type S struct {
-//		Foo int             `json:"foo"`
-//		Bar []interface{}   `json:"bar"`
-//		Baz struct{ A int } `json:"baz"`
-//	}
-//
-//	m := map[string]interface{}{
-//		"foo": 123,
-//		"bar": []interface{}{"123", 456.0},
-//		"baz": struct{ A int }{123},
-//	}
-//
-//	value = NewValue(reporter,m)
-//
-//	var target S
-//	value.Decode(&target)
-//
-//	assert.Equal(t, S{123, []interface{}{"123", 456.0}, struct{ A int }{123}, target})
-func (v *Value) Decode(target interface{}) *Value {
-	opChain := v.chain.enter("Decode()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	canonDecode(opChain, v.value, target)
-	return v
-}
+func (v *Value) Decode(target interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // Alias returns a new Value object with alias.
 // When a test of Value object with alias is failed,
@@ -131,13 +103,7 @@ func (v *Value) Decode(target interface{}) *Value {
 //	// When a test is failed, an assertion with alias is
 //	// foo.IsEqual()
 //	fooWithAlias.IsEqual("bar")
-func (v *Value) Alias(name string) *Value {
-	opChain := v.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	v.chain.setAlias(name)
-	return v
-}
+func (v *Value) Alias(name string) *Value { _ = "STUB: not implemented"; return nil }
 
 // Path returns a new Value object for child object(s) matching given
 // JSONPath expression.
@@ -165,12 +131,7 @@ func (v *Value) Alias(name string) *Value {
 //	for _, user := range value.Path("$..user").Array().Iter() {
 //		user.String().IsEqual("john")
 //	}
-func (v *Value) Path(path string) *Value {
-	opChain := v.chain.enter("Path(%q)", path)
-	defer opChain.leave()
-
-	return jsonPath(opChain, v.value, path)
-}
+func (v *Value) Path(path string) *Value { _ = "STUB: not implemented"; return nil }
 
 // Schema succeeds if value matches given JSON Schema.
 //
@@ -210,13 +171,7 @@ func (v *Value) Path(path string) *Value {
 //
 //	value := NewValue(t, data)
 //	value.Schema("http://example.com/schema.json")
-func (v *Value) Schema(schema interface{}) *Value {
-	opChain := v.chain.enter("Schema()")
-	defer opChain.leave()
-
-	jsonSchema(opChain, v.value, schema)
-	return v
-}
+func (v *Value) Schema(schema interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // Object returns a new Object attached to underlying value.
 //
@@ -227,29 +182,7 @@ func (v *Value) Schema(schema interface{}) *Value {
 //
 //	value := NewValue(t, map[string]interface{}{"foo": 123})
 //	value.Object().ContainsKey("foo")
-func (v *Value) Object() *Object {
-	opChain := v.chain.enter("Object()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newObject(opChain, nil)
-	}
-
-	data, ok := v.value.(map[string]interface{})
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is object"),
-			},
-		})
-		return newObject(opChain, nil)
-	}
-
-	return newObject(opChain, data)
-}
+func (v *Value) Object() *Object { _ = "STUB: not implemented"; return nil }
 
 // Array returns a new Array attached to underlying value.
 //
@@ -260,29 +193,7 @@ func (v *Value) Object() *Object {
 //
 //	value := NewValue(t, []interface{}{"foo", 123})
 //	value.Array().ConsistsOf("foo", 123)
-func (v *Value) Array() *Array {
-	opChain := v.chain.enter("Array()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newArray(opChain, nil)
-	}
-
-	data, ok := v.value.([]interface{})
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is array"),
-			},
-		})
-		return newArray(opChain, nil)
-	}
-
-	return newArray(opChain, data)
-}
+func (v *Value) Array() *Array { _ = "STUB: not implemented"; return nil }
 
 // String returns a new String attached to underlying value.
 //
@@ -293,29 +204,7 @@ func (v *Value) Array() *Array {
 //
 //	value := NewValue(t, "foo")
 //	value.String().IsEqualFold("FOO")
-func (v *Value) String() *String {
-	opChain := v.chain.enter("String()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	data, ok := v.value.(string)
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is string"),
-			},
-		})
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, data)
-}
+func (v *Value) String() *String { _ = "STUB: not implemented"; return nil }
 
 // Number returns a new Number attached to underlying value.
 //
@@ -326,29 +215,7 @@ func (v *Value) String() *String {
 //
 //	value := NewValue(t, 123)
 //	value.Number().InRange(100, 200)
-func (v *Value) Number() *Number {
-	opChain := v.chain.enter("Number()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newNumber(opChain, 0)
-	}
-
-	data, ok := v.value.(float64)
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is number"),
-			},
-		})
-		return newNumber(opChain, 0)
-	}
-
-	return newNumber(opChain, data)
-}
+func (v *Value) Number() *Number { _ = "STUB: not implemented"; return nil }
 
 // Boolean returns a new Boolean attached to underlying value.
 //
@@ -359,29 +226,7 @@ func (v *Value) Number() *Number {
 //
 //	value := NewValue(t, true)
 //	value.Boolean().IsTrue()
-func (v *Value) Boolean() *Boolean {
-	opChain := v.chain.enter("Boolean()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newBoolean(opChain, false)
-	}
-
-	data, ok := v.value.(bool)
-
-	if !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is boolean"),
-			},
-		})
-		return newBoolean(opChain, false)
-	}
-
-	return newBoolean(opChain, data)
-}
+func (v *Value) Boolean() *Boolean { _ = "STUB: not implemented"; return nil }
 
 // IsNull succeeds if value is nil.
 //
@@ -396,26 +241,7 @@ func (v *Value) Boolean() *Boolean {
 //
 //	value := NewValue(t, []interface{}(nil))
 //	value.IsNull()
-func (v *Value) IsNull() *Value {
-	opChain := v.chain.enter("IsNull()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if !(v.value == nil) {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNil,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is null"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsNull() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotNull succeeds if value is not nil.
 //
@@ -430,60 +256,24 @@ func (v *Value) IsNull() *Value {
 //
 //	value := NewValue(t, make([]interface{}, 0))
 //	value.NotNull()
-func (v *Value) NotNull() *Value {
-	opChain := v.chain.enter("NotNull()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if v.value == nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNotNil,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is non-null"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotNull() *Value { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsNull instead.
 func (v *Value) Null() *Value {
-	return v.IsNull()
+	_ = "STUB: not implemented"
+
+	// IsObject succeeds if the underlying value is an object.
+	//
+	// If underlying value is not an object (map[string]interface{}), failure is reported.
+	//
+	// Example:
+	//
+	//	value := NewValue(t, map[string]interface{}{"foo": 123})
+	//	value.IsObject()
+	return nil
 }
 
-// IsObject succeeds if the underlying value is an object.
-//
-// If underlying value is not an object (map[string]interface{}), failure is reported.
-//
-// Example:
-//
-//	value := NewValue(t, map[string]interface{}{"foo": 123})
-//	value.IsObject()
-func (v *Value) IsObject() *Value {
-	opChain := v.chain.enter("IsObject()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(map[string]interface{}); !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is object"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsObject() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotObject succeeds if the underlying value is not an object.
 //
@@ -493,26 +283,7 @@ func (v *Value) IsObject() *Value {
 //
 //	value := NewValue(t, nil)
 //	value.NotObject()
-func (v *Value) NotObject() *Value {
-	opChain := v.chain.enter("NotObject()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(map[string]interface{}); ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is not object"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotObject() *Value { _ = "STUB: not implemented"; return nil }
 
 // IsArray succeeds if the underlying value is an array.
 //
@@ -522,26 +293,7 @@ func (v *Value) NotObject() *Value {
 //
 //	value := NewValue(t, []interface{}{"foo", "123"})
 //	value.IsArray()
-func (v *Value) IsArray() *Value {
-	opChain := v.chain.enter("IsArray()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.([]interface{}); !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is array"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsArray() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotArray succeeds if the underlying value is not an array.
 //
@@ -551,26 +303,7 @@ func (v *Value) IsArray() *Value {
 //
 //	value := NewValue(t, nil)
 //	value.NotArray()
-func (v *Value) NotArray() *Value {
-	opChain := v.chain.enter("NotArray()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.([]interface{}); ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is not array"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotArray() *Value { _ = "STUB: not implemented"; return nil }
 
 // IsString succeeds if the underlying value is a string.
 //
@@ -580,26 +313,7 @@ func (v *Value) NotArray() *Value {
 //
 //	value := NewValue(t, "foo")
 //	value.IsString()
-func (v *Value) IsString() *Value {
-	opChain := v.chain.enter("IsString()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(string); !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is string"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsString() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotString succeeds if the underlying value is not a string.
 //
@@ -609,26 +323,7 @@ func (v *Value) IsString() *Value {
 //
 //	value := NewValue(t, nil)
 //	value.NotString()
-func (v *Value) NotString() *Value {
-	opChain := v.chain.enter("NotString()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(string); ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is not string"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotString() *Value { _ = "STUB: not implemented"; return nil }
 
 // IsNumber succeeds if the underlying value is a number.
 //
@@ -639,26 +334,7 @@ func (v *Value) NotString() *Value {
 //
 //	value := NewValue(t, 123)
 //	value.IsNumber()
-func (v *Value) IsNumber() *Value {
-	opChain := v.chain.enter("IsNumber()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(float64); !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is number"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsNumber() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotNumber succeeds if the underlying value is a not a number.
 //
@@ -669,26 +345,7 @@ func (v *Value) IsNumber() *Value {
 //
 //	value := NewValue(t, nil)
 //	value.NotNumber()
-func (v *Value) NotNumber() *Value {
-	opChain := v.chain.enter("NotNumber()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(float64); ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is not number"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotNumber() *Value { _ = "STUB: not implemented"; return nil }
 
 // IsBoolean succeeds if the underlying value is a boolean.
 //
@@ -698,26 +355,7 @@ func (v *Value) NotNumber() *Value {
 //
 //	value := NewValue(t, true)
 //	value.IsBoolean()
-func (v *Value) IsBoolean() *Value {
-	opChain := v.chain.enter("IsBoolean()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(bool); !ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is boolean"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsBoolean() *Value { _ = "STUB: not implemented"; return nil }
 
 // NotBoolean succeeds if the underlying value is not a boolean.
 //
@@ -727,26 +365,7 @@ func (v *Value) IsBoolean() *Value {
 //
 //	value := NewValue(t, nil)
 //	value.NotBoolean()
-func (v *Value) NotBoolean() *Value {
-	opChain := v.chain.enter("NotBoolean()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if _, ok := v.value.(bool); ok {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{v.value},
-			Errors: []error{
-				errors.New("expected: value is not boolean"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotBoolean() *Value { _ = "STUB: not implemented"; return nil }
 
 // IsEqual succeeds if value is equal to another value (e.g. map, slice, string, etc).
 // Before comparison, both values are converted to canonical form.
@@ -755,32 +374,7 @@ func (v *Value) NotBoolean() *Value {
 //
 //	value := NewValue(t, "foo")
 //	value.IsEqual("foo")
-func (v *Value) IsEqual(value interface{}) *Value {
-	opChain := v.chain.enter("IsEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	expected, ok := canonValue(opChain, value)
-	if !ok {
-		return v
-	}
-
-	if !reflect.DeepEqual(expected, v.value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{v.value},
-			Expected: &AssertionValue{expected},
-			Errors: []error{
-				errors.New("expected: values are equal"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) IsEqual(value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // NotEqual succeeds if value is not equal to another value (e.g. map, slice,
 // string, etc). Before comparison, both values are converted to canonical form.
@@ -789,37 +383,10 @@ func (v *Value) IsEqual(value interface{}) *Value {
 //
 //	value := NewValue(t, "foo")
 //	value.NorEqual("bar")
-func (v *Value) NotEqual(value interface{}) *Value {
-	opChain := v.chain.enter("NotEqual()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	expected, ok := canonValue(opChain, value)
-	if !ok {
-		return v
-	}
-
-	if reflect.DeepEqual(expected, v.value) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertNotEqual,
-			Actual:   &AssertionValue{v.value},
-			Expected: &AssertionValue{expected},
-			Errors: []error{
-				errors.New("expected: values are non-equal"),
-			},
-		})
-	}
-
-	return v
-}
+func (v *Value) NotEqual(value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use IsEqual instead.
-func (v *Value) Equal(value interface{}) *Value {
-	return v.IsEqual(value)
-}
+func (v *Value) Equal(value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // InList succeeds if whole value is equal to one of the values from given
 // list of values (e.g. map, slice, string, etc). Before comparison, all
@@ -831,50 +398,9 @@ func (v *Value) Equal(value interface{}) *Value {
 //
 //	value := NewValue(t, "foo")
 //	value.InList("foo", 123)
-func (v *Value) InList(values ...interface{}) *Value {
-	opChain := v.chain.enter("InList()")
-	defer opChain.leave()
+func (v *Value) InList(values ...interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
-	if opChain.failed() {
-		return v
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return v
-	}
-
-	var isListed bool
-	for _, val := range values {
-		expected, ok := canonValue(opChain, val)
-		if !ok {
-			return v
-		}
-
-		if reflect.DeepEqual(expected, v.value) {
-			isListed = true
-			// continue loop to check that all values are correct
-		}
-	}
-
-	if !isListed {
-		opChain.fail(AssertionFailure{
-			Type:     AssertBelongs,
-			Actual:   &AssertionValue{v.value},
-			Expected: &AssertionValue{AssertionList(values)},
-			Errors: []error{
-				errors.New("expected: value is equal to one of the values"),
-			},
-		})
-	}
-
-	return v
-}
+// continue loop to check that all values are correct
 
 // NotInList succeeds if the whole value is not equal to any of the values from
 // given list of values (e.g. map, slice, string, etc).
@@ -886,42 +412,4 @@ func (v *Value) InList(values ...interface{}) *Value {
 //
 //	value := NewValue(t, "foo")
 //	value.NotInList("bar", 123)
-func (v *Value) NotInList(values ...interface{}) *Value {
-	opChain := v.chain.enter("NotInList()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return v
-	}
-
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty list argument"),
-			},
-		})
-		return v
-	}
-
-	for _, val := range values {
-		expected, ok := canonValue(opChain, val)
-		if !ok {
-			return v
-		}
-
-		if reflect.DeepEqual(expected, v.value) {
-			opChain.fail(AssertionFailure{
-				Type:     AssertNotBelongs,
-				Actual:   &AssertionValue{v.value},
-				Expected: &AssertionValue{AssertionList(values)},
-				Errors: []error{
-					errors.New("expected: value is not equal to any of the values"),
-				},
-			})
-			return v
-		}
-	}
-
-	return v
-}
+func (v *Value) NotInList(values ...interface{}) *Value { _ = "STUB: not implemented"; return nil }

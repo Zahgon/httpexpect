@@ -25,42 +25,4 @@ type StacktraceEntry struct {
 
 var stacktraceFuncRe = regexp.MustCompile(`^(.+/[^.]+)\.(.+)$`)
 
-func stacktrace() []StacktraceEntry {
-	callers := []StacktraceEntry{}
-	for i := 1; ; i++ {
-		pc, file, line, ok := runtime.Caller(i)
-		if !ok {
-			break
-		}
-
-		f := runtime.FuncForPC(pc)
-		if f == nil {
-			break
-		}
-
-		entry := StacktraceEntry{
-			Pc:   pc,
-			File: file,
-			Line: line,
-			Func: f,
-		}
-
-		if m := stacktraceFuncRe.FindStringSubmatch(f.Name()); m != nil {
-			entry.FuncName = m[2]
-			entry.FuncPackage = m[1]
-		} else {
-			entry.FuncName = f.Name()
-		}
-
-		entry.FuncOffset = pc - f.Entry()
-
-		switch f.Name() {
-		case "main.main", "testing.tRunner":
-			entry.IsEntrypoint = true
-		}
-
-		callers = append(callers, entry)
-	}
-
-	return callers
-}
+func stacktrace() []StacktraceEntry { _ = "STUB: not implemented"; return nil }

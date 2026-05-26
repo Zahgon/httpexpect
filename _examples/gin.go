@@ -11,12 +11,9 @@ func init() {
 
 // GinHandler Create add /example route to gin engine
 func GinHandler(r *gin.Engine) *gin.Engine {
+	_ = "STUB: not implemented"
 	// Add route to the gin engine
-	r.GET("/example", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	// return gin engine with newly added route
-	return r
+	return nil
 }
+
+// return gin engine with newly added route

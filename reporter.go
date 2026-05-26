@@ -1,7 +1,6 @@
 package httpexpect
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,13 +14,12 @@ type AssertReporter struct {
 }
 
 // NewAssertReporter returns a new AssertReporter object.
-func NewAssertReporter(t assert.TestingT) *AssertReporter {
-	return &AssertReporter{assert.New(t)}
-}
+func NewAssertReporter(t assert.TestingT) *AssertReporter { _ = "STUB: not implemented"; return nil }
 
 // Errorf implements Reporter.Errorf.
 func (r *AssertReporter) Errorf(message string, args ...interface{}) {
-	r.backend.Fail(fmt.Sprintf(message, args...))
+	_ = "STUB: not implemented"
+	return
 }
 
 // RequireReporter implements Reporter interface using `testify/require'
@@ -31,13 +29,12 @@ type RequireReporter struct {
 }
 
 // NewRequireReporter returns a new RequireReporter object.
-func NewRequireReporter(t require.TestingT) *RequireReporter {
-	return &RequireReporter{require.New(t)}
-}
+func NewRequireReporter(t require.TestingT) *RequireReporter { _ = "STUB: not implemented"; return nil }
 
 // Errorf implements Reporter.Errorf.
 func (r *RequireReporter) Errorf(message string, args ...interface{}) {
-	r.backend.FailNow(fmt.Sprintf(message, args...))
+	_ = "STUB: not implemented"
+	return
 }
 
 // FatalReporter is a struct that implements the Reporter interface
@@ -47,13 +44,12 @@ type FatalReporter struct {
 }
 
 // NewFatalReporter returns a new FatalReporter object.
-func NewFatalReporter(t testing.TB) *FatalReporter {
-	return &FatalReporter{t}
-}
+func NewFatalReporter(t testing.TB) *FatalReporter { _ = "STUB: not implemented"; return nil }
 
 // Errorf implements Reporter.Errorf.
 func (r *FatalReporter) Errorf(message string, args ...interface{}) {
-	r.backend.Fatalf("%s", fmt.Sprintf(message, args...))
+	_ = "STUB: not implemented"
+	return
 }
 
 // PanicReporter is a struct that implements the Reporter interface
@@ -64,11 +60,10 @@ func (r *FatalReporter) Errorf(message string, args ...interface{}) {
 type PanicReporter struct{}
 
 // NewPanicReporter returns a new PanicReporter object.
-func NewPanicReporter() *PanicReporter {
-	return &PanicReporter{}
-}
+func NewPanicReporter() *PanicReporter { _ = "STUB: not implemented"; return nil }
 
 // Errorf implements Reporter.Errorf
 func (r *PanicReporter) Errorf(message string, args ...interface{}) {
-	panic(fmt.Sprintf(message, args...))
+	_ = "STUB: not implemented"
+	return
 }

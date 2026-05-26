@@ -1,11 +1,8 @@
 package httpexpect
 
 import (
-	"fmt"
 	"sync"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // Every matcher struct, e.g. Value, Object, Array, etc. contains a chain instance.
@@ -108,262 +105,70 @@ const (
 )
 
 // Construct chain using config.
-func newChainWithConfig(name string, config Config) *chain {
-	config.validate()
-
-	c := &chain{
-		context:  AssertionContext{},
-		handler:  config.AssertionHandler,
-		severity: SeverityError,
-	}
-
-	c.context.TestName = config.TestName
-
-	if name != "" {
-		c.context.Path = []string{name}
-		c.context.AliasedPath = []string{name}
-	} else {
-		c.context.Path = []string{}
-		c.context.AliasedPath = []string{}
-	}
-
-	if config.Environment != nil {
-		c.context.Environment = config.Environment
-	} else {
-		c.context.Environment = newEnvironment(c)
-	}
-
-	c.context.TestingTB = isTestingTB(c.handler)
-
-	return c
-}
+func newChainWithConfig(name string, config Config) *chain { _ = "STUB: not implemented"; return nil }
 
 // Construct chain using DefaultAssertionHandler and provided Reporter.
 func newChainWithDefaults(name string, reporter Reporter, flag ...chainFlags) *chain {
-	if reporter == nil {
-		panic("Reporter is nil")
-	}
-
-	c := &chain{
-		context: AssertionContext{},
-		handler: &DefaultAssertionHandler{
-			Formatter: &DefaultFormatter{},
-			Reporter:  reporter,
-		},
-		severity: SeverityError,
-	}
-
-	if name != "" {
-		c.context.Path = []string{name}
-		c.context.AliasedPath = []string{name}
-	} else {
-		c.context.Path = []string{}
-		c.context.AliasedPath = []string{}
-	}
-
-	c.context.Environment = newEnvironment(c)
-
-	c.context.TestingTB = isTestingTB(c.handler)
-
-	for _, f := range flag {
-		c.flags |= f
-	}
-
-	return c
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Get environment instance.
 // Root chain constructor either gets environment from config or creates a new one.
 // Child chains inherit environment from parent.
-func (c *chain) env() *Environment {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	return c.context.Environment
-}
+func (c *chain) env() *Environment { _ = "STUB: not implemented"; return nil }
 
 // Make this chain to be root.
 // Chain's parent field is cleared.
 // Failures wont be propagated to the upper chains anymore.
-func (c *chain) setRoot() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	c.parent = nil
-}
+func (c *chain) setRoot() { _ = "STUB: not implemented"; return }
 
 // Set severity of reported failures.
 // Chain always overrides failure severity with configured one.
-func (c *chain) setSeverity(severity AssertionSeverity) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	c.severity = severity
-}
+func (c *chain) setSeverity(severity AssertionSeverity) { _ = "STUB: not implemented"; return }
 
 // Reset aliased path to given string.
-func (c *chain) setAlias(name string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	if name != "" {
-		c.context.AliasedPath = []string{name}
-	} else {
-		c.context.AliasedPath = []string{}
-	}
-}
+func (c *chain) setAlias(name string) { _ = "STUB: not implemented"; return }
 
 // Store request name in AssertionContext.
 // Child chains inherit context from parent.
-func (c *chain) setRequestName(name string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	c.context.RequestName = name
-}
+func (c *chain) setRequestName(name string) { _ = "STUB: not implemented"; return }
 
 // Store request pointer in AssertionContext.
 // Child chains inherit context from parent.
-func (c *chain) setRequest(req *Request) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	if chainValidation && c.context.Request != nil {
-		panic("context.Request already set")
-	}
-
-	c.context.Request = req
-}
+func (c *chain) setRequest(req *Request) { _ = "STUB: not implemented"; return }
 
 // Store response pointer in AssertionContext.
 // Child chains inherit context from parent.
-func (c *chain) setResponse(resp *Response) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	if chainValidation && c.context.Response != nil {
-		panic("context.Response already set")
-	}
-
-	c.context.Response = resp
-}
+func (c *chain) setResponse(resp *Response) { _ = "STUB: not implemented"; return }
 
 // Set assertion handler
 // Chain always overrides assertion handler with given one.
-func (c *chain) setHandler(handler AssertionHandler) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
-
-	c.handler = handler
-	c.context.TestingTB = isTestingTB(handler)
-}
+func (c *chain) setHandler(handler AssertionHandler) { _ = "STUB: not implemented"; return }
 
 // Create chain clone.
 // Typically is called between enter() and leave().
-func (c *chain) clone() *chain {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+func (c *chain) clone() *chain { _ = "STUB: not implemented"; return nil }
 
-	if chainValidation && c.state == stateLeaved {
-		panic("can't use chain after leave")
-	}
+// flagFailedChildren is not inherited because the newly created clone
+// doesn't have children
 
-	contextCopy := c.context
-	contextCopy.Path = append(([]string)(nil), contextCopy.Path...)
-	contextCopy.AliasedPath = append(([]string)(nil), c.context.AliasedPath...)
-
-	return &chain{
-		parent: c,
-		state:  stateCloned,
-		// flagFailedChildren is not inherited because the newly created clone
-		// doesn't have children
-		flags:    (c.flags & ^flagFailedChildren),
-		context:  contextCopy,
-		handler:  c.handler,
-		severity: c.severity,
-		// failure is not inherited because it should be reported only once
-		// by the chain where it happened
-		failure: nil,
-	}
-}
+// failure is not inherited because it should be reported only once
+// by the chain where it happened
 
 // Create temporary chain clone to be used in assertion.
 // If name is not empty, it is appended to the path.
 // You must call leave() at the end of assertion.
 func (c *chain) enter(name string, args ...interface{}) *chain {
-	chainCopy := c.clone()
-
-	chainCopy.state = stateEntered
-	if name != "" {
-		chainCopy.context.Path = append(chainCopy.context.Path, fmt.Sprintf(name, args...))
-		chainCopy.context.AliasedPath =
-			append(c.context.AliasedPath, fmt.Sprintf(name, args...))
-	}
-
-	return chainCopy
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Like enter(), but it replaces last element of the path instead appending to it.
 // Must be called between enter() and leave().
 func (c *chain) replace(name string, args ...interface{}) *chain {
-	if chainValidation {
-		func() {
-			c.mu.Lock()
-			defer c.mu.Unlock()
-
-			if c.state != stateEntered {
-				panic("replace allowed only between enter/leave")
-			}
-			if len(c.context.Path) == 0 {
-				panic("replace allowed only if path is non-empty")
-			}
-			if len(c.context.AliasedPath) == 0 {
-				panic("replace allowed only if aliased path is non-empty")
-			}
-		}()
-	}
-
-	chainCopy := c.clone()
-
-	chainCopy.state = stateEntered
-	if len(chainCopy.context.Path) != 0 {
-		last := len(chainCopy.context.Path) - 1
-		chainCopy.context.Path[last] = fmt.Sprintf(name, args...)
-	}
-	if len(chainCopy.context.AliasedPath) != 0 {
-		last := len(chainCopy.context.AliasedPath) - 1
-		chainCopy.context.AliasedPath[last] = fmt.Sprintf(name, args...)
-	}
-
-	return chainCopy
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Finalize assertion.
@@ -372,141 +177,27 @@ func (c *chain) replace(name string, args ...interface{}) *chain {
 // that they have faield children.
 // Must be called after enter().
 // Chain can't be used after this call.
-func (c *chain) leave() {
-	var (
-		parent  *chain
-		flags   chainFlags
-		context AssertionContext
-		handler AssertionHandler
-		failure *AssertionFailure
-	)
-	func() {
-		c.mu.Lock()
-		defer c.mu.Unlock()
-
-		if chainValidation && c.state != stateEntered {
-			panic("unpaired enter/leave")
-		}
-		c.state = stateLeaved
-
-		parent = c.parent
-		flags = c.flags
-
-		context = c.context
-		handler = c.handler
-		failure = c.failure
-
-	}()
-
-	if flags&(flagFailed|flagFailedChildren) == 0 {
-		handler.Success(&context)
-	}
-
-	if flags&(flagFailed) != 0 && failure != nil {
-		handler.Failure(&context, failure)
-
-		if chainValidation {
-			if err := validateAssertion(failure); err != nil {
-				panic(err)
-			}
-		}
-	}
-
-	if flags&(flagFailed|flagFailedChildren) != 0 && parent != nil {
-		parent.mu.Lock()
-		parent.flags |= flagFailed
-		p := parent.parent
-		parent.mu.Unlock()
-
-		for p != nil {
-			p.mu.Lock()
-			p.flags |= flagFailedChildren
-			pp := p.parent
-			p.mu.Unlock()
-			p = pp
-		}
-	}
-}
+func (c *chain) leave() { _ = "STUB: not implemented"; return }
 
 // Mark chain as failed.
 // Remember failure inside chain. It will be reported in leave().
 // Subsequent fail() call will be ignored.
 // Must be called between enter() and leave().
-func (c *chain) fail(failure AssertionFailure) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if chainValidation && c.state != stateEntered {
-		panic("fail allowed only between enter/leave")
-	}
-
-	if c.flags&flagFailed != 0 {
-		return
-	}
-	c.flags |= flagFailed
-
-	failure.Severity = c.severity
-	if c.severity == SeverityError {
-		failure.IsFatal = true
-	}
-
-	failure.Stacktrace = stacktrace()
-
-	c.failure = &failure
-}
+func (c *chain) fail(failure AssertionFailure) { _ = "STUB: not implemented"; return }
 
 // Check if chain failed.
-func (c *chain) failed() bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	return c.flags&flagFailed != 0
-}
+func (c *chain) failed() bool { _ = "STUB: not implemented"; return false }
 
 // Check if chain or any of its children failed.
-func (c *chain) treeFailed() bool {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	return c.flags&(flagFailed|flagFailedChildren) != 0
-}
+func (c *chain) treeFailed() bool { _ = "STUB: not implemented"; return false }
 
 // Report failure unless chain has specified state.
 // For httpexpect own tests.
-func (c *chain) assert(t testing.TB, result chainResult) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	switch result {
-	case success:
-		assert.Equal(t, chainFlags(0), c.flags&flagFailed,
-			"expected: chain is in success state")
-
-	case failure:
-		assert.NotEqual(t, chainFlags(0), c.flags&flagFailed,
-			"expected: chain is in failure state")
-	}
-}
+func (c *chain) assert(t testing.TB, result chainResult) { _ = "STUB: not implemented"; return }
 
 // Report failure unless chain has specified flags.
 // For httpexpect own tests.
-func (c *chain) assertFlags(t testing.TB, flags chainFlags) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	assert.Equal(t, flags, c.flags,
-		"expected: chain has specified flags")
-}
+func (c *chain) assertFlags(t testing.TB, flags chainFlags) { _ = "STUB: not implemented"; return }
 
 // Whether handler outputs to testing.TB
-func isTestingTB(in AssertionHandler) bool {
-	h, ok := in.(*DefaultAssertionHandler)
-	if !ok {
-		return false
-	}
-	switch h.Reporter.(type) {
-	case *AssertReporter, *RequireReporter, *FatalReporter, testing.TB:
-		return true
-	}
-	return false
-}
+func isTestingTB(in AssertionHandler) bool { _ = "STUB: not implemented"; return false }

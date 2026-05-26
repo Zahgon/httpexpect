@@ -14,25 +14,15 @@ import (
 // NewWebsocketDialer produces new websocket.Dialer which dials to bound
 // http.Handler without creating a real net.Conn.
 func NewWebsocketDialer(handler http.Handler) *websocket.Dialer {
-	return &websocket.Dialer{
-		NetDial: func(network, addr string) (net.Conn, error) {
-			hc := newHandlerConn()
-			hc.runHandler(handler)
-			return hc, nil
-		},
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewFastWebsocketDialer produces new websocket.Dialer which dials to bound
 // fasthttp.RequestHandler without creating a real net.Conn.
 func NewFastWebsocketDialer(handler fasthttp.RequestHandler) *websocket.Dialer {
-	return &websocket.Dialer{
-		NetDial: func(network, addr string) (net.Conn, error) {
-			hc := newHandlerConn()
-			hc.runFastHandler(handler)
-			return hc, nil
-		},
-	}
+	_ = "STUB: not implemented"
+	return nil
 }
 
 type handlerConn struct {
@@ -42,47 +32,17 @@ type handlerConn struct {
 	wg sync.WaitGroup
 }
 
-func newHandlerConn() *handlerConn {
-	dialConn, backConn := net.Pipe()
+func newHandlerConn() *handlerConn { _ = "STUB: not implemented"; return nil }
 
-	return &handlerConn{
-		Conn:     dialConn,
-		backConn: backConn,
-	}
-}
+func (hc *handlerConn) Close() error { _ = "STUB: not implemented"; return nil }
 
-func (hc *handlerConn) Close() error {
-	err := hc.Conn.Close()
-	hc.wg.Wait() // wait the background goroutine
-	return err
-}
+// wait the background goroutine
 
-func (hc *handlerConn) runHandler(handler http.Handler) {
-	hc.wg.Add(1)
-
-	go func() {
-		defer hc.wg.Done()
-
-		recorder := &hijackRecorder{conn: hc.backConn}
-
-		for {
-			req, err := http.ReadRequest(bufio.NewReader(hc.backConn))
-			if err != nil {
-				return
-			}
-			handler.ServeHTTP(recorder, req)
-		}
-	}()
-}
+func (hc *handlerConn) runHandler(handler http.Handler) { _ = "STUB: not implemented"; return }
 
 func (hc *handlerConn) runFastHandler(handler fasthttp.RequestHandler) {
-	hc.wg.Add(1)
-
-	go func() {
-		defer hc.wg.Done()
-
-		_ = fasthttp.ServeConn(hc.backConn, handler)
-	}()
+	_ = "STUB: not implemented"
+	return
 }
 
 // hijackRecorder it similar to httptest.ResponseRecorder,
@@ -98,14 +58,11 @@ type hijackRecorder struct {
 //
 // Implements http.Hijacker interface.
 func (r *hijackRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
-	rw := bufio.NewReadWriter(bufio.NewReader(r.conn), bufio.NewWriter(r.conn))
-	return r.conn, rw, nil
+	_ = "STUB: not implemented"
+	return *new(net.Conn), nil, nil
 }
 
 // WriteHeader write HTTP header to the client and closes the connection
 //
 // Implements http.ResponseWriter interface.
-func (r *hijackRecorder) WriteHeader(code int) {
-	resp := http.Response{StatusCode: code, Header: r.Header()}
-	_ = resp.Write(r.conn)
-}
+func (r *hijackRecorder) WriteHeader(code int) { _ = "STUB: not implemented"; return }

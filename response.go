@@ -1,20 +1,11 @@
 package httpexpect
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-	"fmt"
 	"io"
-	"mime"
 	"net/http"
-	"reflect"
 	"regexp"
-	"strconv"
-	"strings"
 	"time"
 
-	"github.com/ajg/form"
 	"github.com/gorilla/websocket"
 )
 
@@ -58,15 +49,8 @@ const (
 func NewResponse(
 	reporter Reporter, response *http.Response, rtt ...time.Duration,
 ) *Response {
-	config := Config{Reporter: reporter}
-	config = config.withDefaults()
-
-	return newResponse(responseOpts{
-		config:   config,
-		chain:    newChainWithConfig("Response()", config),
-		httpResp: response,
-		rtt:      rtt,
-	})
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewResponse returns a new Response instance with config.
@@ -79,14 +63,8 @@ func NewResponse(
 func NewResponseC(
 	config Config, response *http.Response, rtt ...time.Duration,
 ) *Response {
-	config = config.withDefaults()
-
-	return newResponse(responseOpts{
-		config:   config,
-		chain:    newChainWithConfig("Response()", config),
-		httpResp: response,
-		rtt:      rtt,
-	})
+	_ = "STUB: not implemented"
+	return nil
 }
 
 type responseOpts struct {
@@ -97,136 +75,23 @@ type responseOpts struct {
 	rtt       []time.Duration
 }
 
-func newResponse(opts responseOpts) *Response {
-	opts.config.validate()
-
-	r := &Response{
-		config:       opts.config,
-		chain:        opts.chain.clone(),
-		contentState: contentPending,
-	}
-
-	opChain := r.chain.enter("")
-	defer opChain.leave()
-
-	if len(opts.rtt) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple rtt arguments"),
-			},
-		})
-		return r
-	}
-
-	if len(opts.rtt) > 0 {
-		rttCopy := opts.rtt[0]
-		r.rtt = &rttCopy
-	}
-
-	if opts.httpResp == nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNotNil,
-			Actual: &AssertionValue{opts.httpResp},
-			Errors: []error{
-				errors.New("expected: non-nil response"),
-			},
-		})
-		return r
-	}
-
-	r.httpResp = opts.httpResp
-
-	if r.httpResp.Body != nil && r.httpResp.Body != http.NoBody {
-		if _, ok := r.httpResp.Body.(*bodyWrapper); !ok {
-			respCopy := *r.httpResp
-			r.httpResp = &respCopy
-			r.httpResp.Body = newBodyWrapper(r.httpResp.Body, nil)
-		}
-	}
-
-	r.websocket = opts.websocket
-	r.cookies = r.httpResp.Cookies()
-
-	r.chain.setResponse(r)
-
-	return r
-}
+func newResponse(opts responseOpts) *Response { _ = "STUB: not implemented"; return nil }
 
 func (r *Response) getContent(opChain *chain, method string) ([]byte, bool) {
-	switch r.contentState {
-	case contentRetreived:
-		return r.content, true
-
-	case contentFailed:
-		return nil, false
-
-	case contentPending:
-		break
-
-	case contentHijacked:
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("cannot call %s because Reader() was already called", method),
-			},
-		})
-		return nil, false
-	}
-
-	resp := r.httpResp
-
-	if resp.Body == nil || resp.Body == http.NoBody {
-		return []byte{}, true
-	}
-
-	if bw, ok := resp.Body.(*bodyWrapper); ok {
-		bw.Rewind()
-	}
-
-	content, err := io.ReadAll(resp.Body)
-
-	closeErr := resp.Body.Close()
-	if err == nil {
-		err = closeErr
-	}
-
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertOperation,
-			Errors: []error{
-				errors.New("failed to read response body"),
-				err,
-			},
-		})
-
-		r.content = nil
-		r.contentState = contentFailed
-
-		return nil, false
-	}
-
-	r.content = content
-	r.contentState = contentRetreived
-	r.contentMethod = method
-
-	return r.content, true
+	_ = "STUB: not implemented"
+	return nil, false
 }
 
 // Raw returns underlying http.Response object.
 // This is the value originally passed to NewResponse.
 func (r *Response) Raw() *http.Response {
-	return r.httpResp
+	_ = "STUB: not implemented"
+
+	// Alias is similar to Value.Alias.
+	return nil
 }
 
-// Alias is similar to Value.Alias.
-func (r *Response) Alias(name string) *Response {
-	opChain := r.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	r.chain.setAlias(name)
-	return r
-}
+func (r *Response) Alias(name string) *Response { _ = "STUB: not implemented"; return nil }
 
 // RoundTripTime returns a new Duration instance with response round-trip time.
 //
@@ -238,32 +103,10 @@ func (r *Response) Alias(name string) *Response {
 //
 //	resp := NewResponse(t, response, time.Duration(10000000))
 //	resp.RoundTripTime().IsLt(10 * time.Millisecond)
-func (r *Response) RoundTripTime() *Duration {
-	opChain := r.chain.enter("RoundTripTime()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newDuration(opChain, nil)
-	}
-
-	return newDuration(opChain, r.rtt)
-}
+func (r *Response) RoundTripTime() *Duration { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use RoundTripTime instead.
-func (r *Response) Duration() *Number {
-	opChain := r.chain.enter("Duration()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newNumber(opChain, 0)
-	}
-
-	if r.rtt == nil {
-		return newNumber(opChain, 0)
-	}
-
-	return newNumber(opChain, float64(*r.rtt))
-}
+func (r *Response) Duration() *Number { _ = "STUB: not implemented"; return nil }
 
 // Status succeeds if response contains given status code.
 //
@@ -271,19 +114,7 @@ func (r *Response) Duration() *Number {
 //
 //	resp := NewResponse(t, response)
 //	resp.Status(http.StatusOK)
-func (r *Response) Status(status int) *Response {
-	opChain := r.chain.enter("Status()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	r.checkEqual(opChain, "http status",
-		statusCodeText(status), statusCodeText(r.httpResp.StatusCode))
-
-	return r
-}
+func (r *Response) Status(status int) *Response { _ = "STUB: not implemented"; return nil }
 
 // StatusRange is enum for response status ranges.
 type StatusRange int
@@ -320,34 +151,7 @@ const (
 //
 //	resp := NewResponse(t, response)
 //	resp.StatusRange(Status2xx)
-func (r *Response) StatusRange(rn StatusRange) *Response {
-	opChain := r.chain.enter("StatusRange()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	status := statusCodeText(r.httpResp.StatusCode)
-
-	actual := statusRangeText(r.httpResp.StatusCode)
-	expected := statusRangeText(int(rn))
-
-	if actual == "" || actual != expected {
-		opChain.fail(AssertionFailure{
-			Type:   AssertBelongs,
-			Actual: &AssertionValue{status},
-			Expected: &AssertionValue{AssertionList{
-				statusRangeText(int(rn)),
-			}},
-			Errors: []error{
-				errors.New("expected: http status belongs to given range"),
-			},
-		})
-	}
-
-	return r
-}
+func (r *Response) StatusRange(rn StatusRange) *Response { _ = "STUB: not implemented"; return nil }
 
 // StatusList succeeds if response matches with any given status code list
 //
@@ -355,77 +159,13 @@ func (r *Response) StatusRange(rn StatusRange) *Response {
 //
 //	resp := NewResponse(t, response)
 //	resp.StatusList(http.StatusForbidden, http.StatusUnauthorized)
-func (r *Response) StatusList(values ...int) *Response {
-	opChain := r.chain.enter("StatusList()")
-	defer opChain.leave()
+func (r *Response) StatusList(values ...int) *Response { _ = "STUB: not implemented"; return nil }
 
-	if opChain.failed() {
-		return r
-	}
+func statusCodeText(code int) string { _ = "STUB: not implemented"; return "" }
 
-	if len(values) == 0 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected empty status list"),
-			},
-		})
-		return r
-	}
+func statusRangeText(code int) string { _ = "STUB: not implemented"; return "" }
 
-	var found bool
-	for _, v := range values {
-		if v == r.httpResp.StatusCode {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		opChain.fail(AssertionFailure{
-			Type:     AssertBelongs,
-			Actual:   &AssertionValue{statusCodeText(r.httpResp.StatusCode)},
-			Expected: &AssertionValue{AssertionList(statusListText(values))},
-			Errors: []error{
-				errors.New("expected: http status belongs to given list"),
-			},
-		})
-	}
-
-	return r
-}
-
-func statusCodeText(code int) string {
-	if s := http.StatusText(code); s != "" {
-		return strconv.Itoa(code) + " " + s
-	}
-	return strconv.Itoa(code)
-}
-
-func statusRangeText(code int) string {
-	switch {
-	case code >= 100 && code < 200:
-		return "1xx Informational"
-	case code >= 200 && code < 300:
-		return "2xx Success"
-	case code >= 300 && code < 400:
-		return "3xx Redirection"
-	case code >= 400 && code < 500:
-		return "4xx Client Error"
-	case code >= 500 && code < 600:
-		return "5xx Server Error"
-	default:
-		return ""
-	}
-}
-
-func statusListText(values []int) []interface{} {
-	var statusText []interface{}
-	for _, v := range values {
-		statusText = append(statusText, statusCodeText(v))
-	}
-	return statusText
-}
+func statusListText(values []int) []interface{} { _ = "STUB: not implemented"; return nil }
 
 // Headers returns a new Object instance with response header map.
 //
@@ -433,19 +173,7 @@ func statusListText(values []int) []interface{} {
 //
 //	resp := NewResponse(t, response)
 //	resp.Headers().Value("Content-Type").String().IsEqual("application-json")
-func (r *Response) Headers() *Object {
-	opChain := r.chain.enter("Headers()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newObject(opChain, nil)
-	}
-
-	var value map[string]interface{}
-	value, _ = canonMap(opChain, r.httpResp.Header)
-
-	return newObject(opChain, value)
-}
+func (r *Response) Headers() *Object { _ = "STUB: not implemented"; return nil }
 
 // Header returns a new String instance with given header field.
 //
@@ -454,18 +182,7 @@ func (r *Response) Headers() *Object {
 //	resp := NewResponse(t, response)
 //	resp.Header("Content-Type").IsEqual("application-json")
 //	resp.Header("Date").AsDateTime().IsLe(time.Now())
-func (r *Response) Header(header string) *String {
-	opChain := r.chain.enter("Header(%q)", header)
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	value := r.httpResp.Header.Get(header)
-
-	return newString(opChain, value)
-}
+func (r *Response) Header(header string) *String { _ = "STUB: not implemented"; return nil }
 
 // Cookies returns a new Array instance with all cookie names set by this response.
 // Returned Array contains a String value for every cookie name.
@@ -478,21 +195,7 @@ func (r *Response) Header(header string) *String {
 //
 //	resp := NewResponse(t, response)
 //	resp.Cookies().Contains("session")
-func (r *Response) Cookies() *Array {
-	opChain := r.chain.enter("Cookies()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newArray(opChain, nil)
-	}
-
-	names := []interface{}{}
-	for _, c := range r.cookies {
-		names = append(names, c.Name)
-	}
-
-	return newArray(opChain, names)
-}
+func (r *Response) Cookies() *Array { _ = "STUB: not implemented"; return nil }
 
 // Cookie returns a new Cookie instance with specified cookie from response.
 //
@@ -504,39 +207,7 @@ func (r *Response) Cookies() *Array {
 //
 //	resp := NewResponse(t, response)
 //	resp.Cookie("session").Domain().IsEqual("example.com")
-func (r *Response) Cookie(name string) *Cookie {
-	opChain := r.chain.enter("Cookie(%q)", name)
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newCookie(opChain, nil)
-	}
-
-	var cookie *Cookie
-
-	names := []string{}
-	for _, c := range r.cookies {
-		if c.Name == name {
-			cookie = newCookie(opChain, c)
-			break
-		}
-		names = append(names, c.Name)
-	}
-
-	if cookie == nil {
-		opChain.fail(AssertionFailure{
-			Type:     AssertContainsElement,
-			Actual:   &AssertionValue{names},
-			Expected: &AssertionValue{name},
-			Errors: []error{
-				errors.New("expected: response contains cookie with given name"),
-			},
-		})
-		return newCookie(opChain, nil)
-	}
-
-	return cookie
-}
+func (r *Response) Cookie(name string) *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Websocket returns Websocket instance for interaction with WebSocket server.
 //
@@ -549,27 +220,7 @@ func (r *Response) Cookie(name string) *Cookie {
 //	req.WithWebsocketUpgrade()
 //	ws := req.Expect().Websocket()
 //	defer ws.Disconnect()
-func (r *Response) Websocket() *Websocket {
-	opChain := r.chain.enter("Websocket()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newWebsocket(opChain, r.config, nil)
-	}
-
-	if r.websocket == nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New(
-					"Websocket() requires WithWebsocketUpgrade() to be called on request"),
-			},
-		})
-		return newWebsocket(opChain, r.config, nil)
-	}
-
-	return newWebsocket(opChain, r.config, r.websocket)
-}
+func (r *Response) Websocket() *Websocket { _ = "STUB: not implemented"; return nil }
 
 // Reader returns the body reader from the response.
 //
@@ -581,33 +232,7 @@ func (r *Response) Websocket() *Websocket {
 //
 //	resp := NewResponse(t, response)
 //	reader := resp.Reader()
-func (r *Response) Reader() io.ReadCloser {
-	opChain := r.chain.enter("Reader()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return errBodyReader{errors.New("cannot read from failed Response")}
-	}
-
-	if r.contentState != contentPending {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				fmt.Errorf("cannot call Reader() because %s was already called",
-					r.contentMethod),
-			},
-		})
-		return errBodyReader{errors.New("cannot read from failed Response")}
-	}
-
-	if bw, _ := r.httpResp.Body.(*bodyWrapper); bw != nil {
-		bw.DisableRewinds()
-	}
-
-	r.contentState = contentHijacked
-
-	return r.httpResp.Body
-}
+func (r *Response) Reader() io.ReadCloser { _ = "STUB: not implemented"; return *new(io.ReadCloser) }
 
 // Body returns a new String instance with response body.
 //
@@ -616,47 +241,11 @@ func (r *Response) Reader() io.ReadCloser {
 //	resp := NewResponse(t, response)
 //	resp.Body().NotEmpty()
 //	resp.Body().Length().IsEqual(100)
-func (r *Response) Body() *String {
-	opChain := r.chain.enter("Body()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	content, ok := r.getContent(opChain, "Body()")
-	if !ok {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, string(content))
-}
+func (r *Response) Body() *String { _ = "STUB: not implemented"; return nil }
 
 // NoContent succeeds if response contains empty Content-Type header and
 // empty body.
-func (r *Response) NoContent() *Response {
-	opChain := r.chain.enter("NoContent()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	contentType := r.httpResp.Header.Get("Content-Type")
-	if !r.checkEqual(opChain, `"Content-Type" header`, "", contentType) {
-		return r
-	}
-
-	content, ok := r.getContent(opChain, "NoContent()")
-	if !ok {
-		return r
-	}
-	if !r.checkEqual(opChain, "body", "", string(content)) {
-		return r
-	}
-
-	return r
-}
+func (r *Response) NoContent() *Response { _ = "STUB: not implemented"; return nil }
 
 // HasContentType succeeds if response contains Content-Type header with given
 // media type and charset.
@@ -667,75 +256,40 @@ func (r *Response) NoContent() *Response {
 // If charset is omitted, and mediaType is also empty, Content-Type header
 // should contain no charset.
 func (r *Response) HasContentType(mediaType string, charset ...string) *Response {
-	opChain := r.chain.enter("HasContentType()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	if len(charset) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple charset arguments"),
-			},
-		})
-		return r
-	}
-
-	r.checkContentType(opChain, mediaType, charset...)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // HasContentEncoding succeeds if response has exactly given Content-Encoding list.
 // Common values are empty, "gzip", "compress", "deflate", "identity" and "br".
 func (r *Response) HasContentEncoding(encoding ...string) *Response {
-	opChain := r.chain.enter("HasContentEncoding()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	r.checkEqual(opChain, `"Content-Encoding" header`,
-		encoding,
-		r.httpResp.Header["Content-Encoding"])
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // HasTransferEncoding succeeds if response contains given Transfer-Encoding list.
 // Common values are empty, "chunked" and "identity".
 func (r *Response) HasTransferEncoding(encoding ...string) *Response {
-	opChain := r.chain.enter("HasTransferEncoding()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return r
-	}
-
-	r.checkEqual(opChain, `"Transfer-Encoding" header`,
-		encoding,
-		r.httpResp.TransferEncoding)
-
-	return r
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Deprecated: use HasContentType instead.
 func (r *Response) ContentType(mediaType string, charset ...string) *Response {
-	return r.HasContentType(mediaType, charset...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Deprecated: use HasContentEncoding instead.
 func (r *Response) ContentEncoding(encoding ...string) *Response {
-	return r.HasContentEncoding(encoding...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Deprecated: use HasTransferEncoding instead.
 func (r *Response) TransferEncoding(encoding ...string) *Response {
-	return r.HasTransferEncoding(encoding...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // ContentOpts define parameters for matching the response content parameters.
@@ -758,35 +312,7 @@ type ContentOpts struct {
 //	resp.Text(ContentOpts{
 //	  MediaType: "text/plain",
 //	}).IsEqual("hello, world!")
-func (r *Response) Text(options ...ContentOpts) *String {
-	opChain := r.chain.enter("Text()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	if len(options) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple options arguments"),
-			},
-		})
-		return newString(opChain, "")
-	}
-
-	if !r.checkContentOptions(opChain, options, "text/plain") {
-		return newString(opChain, "")
-	}
-
-	content, ok := r.getContent(opChain, "Text()")
-	if !ok {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, string(content))
-}
+func (r *Response) Text(options ...ContentOpts) *String { _ = "STUB: not implemented"; return nil }
 
 // Form returns a new Object instance with form decoded from response body.
 //
@@ -801,60 +327,13 @@ func (r *Response) Text(options ...ContentOpts) *String {
 //	resp.Form(ContentOpts{
 //	  MediaType: "application/x-www-form-urlencoded",
 //	}).Value("foo").IsEqual("bar")
-func (r *Response) Form(options ...ContentOpts) *Object {
-	opChain := r.chain.enter("Form()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newObject(opChain, nil)
-	}
-
-	if len(options) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple options arguments"),
-			},
-		})
-		return newObject(opChain, nil)
-	}
-
-	object := r.getForm(opChain, "Form()", options...)
-
-	return newObject(opChain, object)
-}
+func (r *Response) Form(options ...ContentOpts) *Object { _ = "STUB: not implemented"; return nil }
 
 func (r *Response) getForm(
 	opChain *chain, method string, options ...ContentOpts,
 ) map[string]interface{} {
-	if !r.checkContentOptions(opChain, options, "application/x-www-form-urlencoded", "") {
-		return nil
-	}
-
-	content, ok := r.getContent(opChain, method)
-	if !ok {
-		return nil
-	}
-
-	decoder := form.NewDecoder(bytes.NewReader(content))
-
-	var object map[string]interface{}
-
-	if err := decoder.Decode(&object); err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertValid,
-			Actual: &AssertionValue{
-				string(content),
-			},
-			Errors: []error{
-				errors.New("failed to decode form"),
-				err,
-			},
-		})
-		return nil
-	}
-
-	return object
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // JSON returns a new Value instance with JSON decoded from response body.
@@ -869,58 +348,13 @@ func (r *Response) getForm(
 //	resp.JSON(ContentOpts{
 //	  MediaType: "application/json",
 //	}).Array.ConsistsOf("foo", "bar")
-func (r *Response) JSON(options ...ContentOpts) *Value {
-	opChain := r.chain.enter("JSON()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newValue(opChain, nil)
-	}
-
-	if len(options) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple options arguments"),
-			},
-		})
-		return newValue(opChain, nil)
-	}
-
-	value := r.getJSON(opChain, "JSON()", options...)
-
-	return newValue(opChain, value)
-}
+func (r *Response) JSON(options ...ContentOpts) *Value { _ = "STUB: not implemented"; return nil }
 
 func (r *Response) getJSON(
 	opChain *chain, method string, options ...ContentOpts,
 ) interface{} {
-	if !r.checkContentOptions(opChain, options, "application/json") {
-		return nil
-	}
-
-	content, ok := r.getContent(opChain, method)
-	if !ok {
-		return nil
-	}
-
-	var value interface{}
-
-	if err := json.Unmarshal(content, &value); err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertValid,
-			Actual: &AssertionValue{
-				string(content),
-			},
-			Errors: []error{
-				errors.New("failed to decode json"),
-				err,
-			},
-		})
-		return nil
-	}
-
-	return value
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // JSONP returns a new Value instance with JSONP decoded from response body.
@@ -944,26 +378,8 @@ func (r *Response) getJSON(
 //	  MediaType: "application/javascript",
 //	}).Array().ConsistsOf("foo", "bar")
 func (r *Response) JSONP(callback string, options ...ContentOpts) *Value {
-	opChain := r.chain.enter("JSONP()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newValue(opChain, nil)
-	}
-
-	if len(options) > 1 {
-		opChain.fail(AssertionFailure{
-			Type: AssertUsage,
-			Errors: []error{
-				errors.New("unexpected multiple options arguments"),
-			},
-		})
-		return newValue(opChain, nil)
-	}
-
-	value := r.getJSONP(opChain, "JSONP()", callback, options...)
-
-	return newValue(opChain, value)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 var (
@@ -973,157 +389,35 @@ var (
 func (r *Response) getJSONP(
 	opChain *chain, method string, callback string, options ...ContentOpts,
 ) interface{} {
-	if !r.checkContentOptions(opChain, options, "application/javascript") {
-		return nil
-	}
-
-	content, ok := r.getContent(opChain, method)
-	if !ok {
-		return nil
-	}
-
-	m := jsonp.FindSubmatch(content)
-
-	if len(m) != 3 || string(m[1]) != callback {
-		opChain.fail(AssertionFailure{
-			Type: AssertValid,
-			Actual: &AssertionValue{
-				string(content),
-			},
-			Errors: []error{
-				fmt.Errorf(`expected: JSONP body in form of "%s(<valid json>)"`,
-					callback),
-			},
-		})
-		return nil
-	}
-
-	var value interface{}
-
-	if err := json.Unmarshal(m[2], &value); err != nil {
-		opChain.fail(AssertionFailure{
-			Type: AssertValid,
-			Actual: &AssertionValue{
-				string(content),
-			},
-			Errors: []error{
-				errors.New("failed to decode json"),
-				err,
-			},
-		})
-		return nil
-	}
-
-	return value
+	_ = "STUB: not implemented"
+	return nil
 }
 
 func (r *Response) checkContentOptions(
 	opChain *chain, options []ContentOpts, expectedType string, expectedCharset ...string,
 ) bool {
-	if len(options) != 0 {
-		if options[0].MediaType != "" {
-			expectedType = options[0].MediaType
-		}
-		if options[0].Charset != "" {
-			expectedCharset = []string{options[0].Charset}
-		}
-	}
-	return r.checkContentType(opChain, expectedType, expectedCharset...)
+	_ = "STUB: not implemented"
+	return false
 }
 
 func (r *Response) checkContentType(
 	opChain *chain, expectedType string, expectedCharset ...string,
 ) bool {
-	contentType := r.httpResp.Header.Get("Content-Type")
-
-	if expectedType == "" && len(expectedCharset) == 0 {
-		if contentType == "" {
-			return true
-		}
-	}
-
-	mediaType, params, err := mime.ParseMediaType(contentType)
-	if err != nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{contentType},
-			Errors: []error{
-				errors.New(`invalid "Content-Type" response header`),
-				err,
-			},
-		})
-		return false
-	}
-
-	if mediaType != expectedType {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{mediaType},
-			Expected: &AssertionValue{expectedType},
-			Errors: []error{
-				errors.New(`unexpected media type in "Content-Type" response header`),
-			},
-		})
-		return false
-	}
-
-	charset := params["charset"]
-
-	if len(expectedCharset) == 0 {
-		if charset != "" && !strings.EqualFold(charset, "utf-8") {
-			opChain.fail(AssertionFailure{
-				Type:     AssertBelongs,
-				Actual:   &AssertionValue{charset},
-				Expected: &AssertionValue{AssertionList{"", "utf-8"}},
-				Errors: []error{
-					errors.New(`unexpected charset in "Content-Type" response header`),
-				},
-			})
-			return false
-		}
-	} else {
-		if !strings.EqualFold(charset, expectedCharset[0]) {
-			opChain.fail(AssertionFailure{
-				Type:     AssertEqual,
-				Actual:   &AssertionValue{charset},
-				Expected: &AssertionValue{expectedCharset[0]},
-				Errors: []error{
-					errors.New(`unexpected charset in "Content-Type" response header`),
-				},
-			})
-			return false
-		}
-	}
-
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 func (r *Response) checkEqual(
 	opChain *chain, what string, expected, actual interface{},
 ) bool {
-	if !reflect.DeepEqual(expected, actual) {
-		opChain.fail(AssertionFailure{
-			Type:     AssertEqual,
-			Actual:   &AssertionValue{actual},
-			Expected: &AssertionValue{expected},
-			Errors: []error{
-				fmt.Errorf("unexpected %s value", what),
-			},
-		})
-		return false
-	}
-
-	return true
+	_ = "STUB: not implemented"
+	return false
 }
 
 type errBodyReader struct {
 	err error
 }
 
-func (r errBodyReader) Read(_ []byte) (int, error) {
-	return 0, r.err
-}
+func (r errBodyReader) Read(_ []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (r errBodyReader) Close() error {
-	return r.err
-}
+func (r errBodyReader) Close() error { _ = "STUB: not implemented"; return nil }

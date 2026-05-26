@@ -1,9 +1,7 @@
 package httpexpect
 
 import (
-	"errors"
 	"net/http"
-	"time"
 )
 
 // Cookie provides methods to inspect attached http.Cookie value.
@@ -26,7 +24,8 @@ type Cookie struct {
 //	cookie.Path().IsEqual("/")
 //	cookie.Expires().InRange(time.Now(), time.Now().Add(time.Hour * 24))
 func NewCookie(reporter Reporter, value *http.Cookie) *Cookie {
-	return newCookie(newChainWithDefaults("Cookie()", reporter), value)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // NewCookieC returns a new Cookie instance with config.
@@ -35,30 +34,9 @@ func NewCookie(reporter Reporter, value *http.Cookie) *Cookie {
 // If value is nil, failure is reported.
 //
 // See NewCookie for usage example.
-func NewCookieC(config Config, value *http.Cookie) *Cookie {
-	return newCookie(newChainWithConfig("Cookie()", config.withDefaults()), value)
-}
+func NewCookieC(config Config, value *http.Cookie) *Cookie { _ = "STUB: not implemented"; return nil }
 
-func newCookie(parent *chain, val *http.Cookie) *Cookie {
-	c := &Cookie{chain: parent.clone(), value: nil}
-
-	opChain := c.chain.enter("")
-	defer opChain.leave()
-
-	if val == nil {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNotNil,
-			Actual: &AssertionValue{val},
-			Errors: []error{
-				errors.New("expected: non-nil cookie"),
-			},
-		})
-	} else {
-		c.value = val
-	}
-
-	return c
-}
+func newCookie(parent *chain, val *http.Cookie) *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Raw returns underlying http.Cookie value attached to Cookie.
 // This is the value originally passed to NewCookie.
@@ -68,17 +46,13 @@ func newCookie(parent *chain, val *http.Cookie) *Cookie {
 //	cookie := NewCookie(t, c)
 //	assert.Equal(t, c, cookie.Raw())
 func (c *Cookie) Raw() *http.Cookie {
-	return c.value
+	_ = "STUB: not implemented"
+
+	// Alias is similar to Value.Alias.
+	return nil
 }
 
-// Alias is similar to Value.Alias.
-func (c *Cookie) Alias(name string) *Cookie {
-	opChain := c.chain.enter("Alias(%q)", name)
-	defer opChain.leave()
-
-	c.chain.setAlias(name)
-	return c
-}
+func (c *Cookie) Alias(name string) *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Name returns a new String instance with cookie name.
 //
@@ -86,16 +60,7 @@ func (c *Cookie) Alias(name string) *Cookie {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.Name().IsEqual("session")
-func (c *Cookie) Name() *String {
-	opChain := c.chain.enter("Name()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, c.value.Name)
-}
+func (c *Cookie) Name() *String { _ = "STUB: not implemented"; return nil }
 
 // Value returns a new String instance with cookie value.
 //
@@ -103,16 +68,7 @@ func (c *Cookie) Name() *String {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.Value().IsEqual("gH6z7Y")
-func (c *Cookie) Value() *String {
-	opChain := c.chain.enter("Value()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, c.value.Value)
-}
+func (c *Cookie) Value() *String { _ = "STUB: not implemented"; return nil }
 
 // Domain returns a new String instance with cookie domain.
 //
@@ -120,16 +76,7 @@ func (c *Cookie) Value() *String {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.Domain().IsEqual("example.com")
-func (c *Cookie) Domain() *String {
-	opChain := c.chain.enter("Domain()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, c.value.Domain)
-}
+func (c *Cookie) Domain() *String { _ = "STUB: not implemented"; return nil }
 
 // Path returns a new String instance with cookie path.
 //
@@ -137,16 +84,7 @@ func (c *Cookie) Domain() *String {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.Path().IsEqual("/foo")
-func (c *Cookie) Path() *String {
-	opChain := c.chain.enter("Path()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newString(opChain, "")
-	}
-
-	return newString(opChain, c.value.Path)
-}
+func (c *Cookie) Path() *String { _ = "STUB: not implemented"; return nil }
 
 // Expires returns a new DateTime instance with cookie expiration date.
 //
@@ -154,16 +92,7 @@ func (c *Cookie) Path() *String {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.Expires().InRange(time.Now(), time.Now().Add(time.Hour * 24))
-func (c *Cookie) Expires() *DateTime {
-	opChain := c.chain.enter("Expires()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return newDateTime(opChain, time.Unix(0, 0))
-	}
-
-	return newDateTime(opChain, c.value.Expires)
-}
+func (c *Cookie) Expires() *DateTime { _ = "STUB: not implemented"; return nil }
 
 // ContainsMaxAge succeeds if cookie has Max-Age field.
 //
@@ -174,26 +103,7 @@ func (c *Cookie) Expires() *DateTime {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.ContainsMaxAge()
-func (c *Cookie) ContainsMaxAge() *Cookie {
-	opChain := c.chain.enter("ContainsMaxAge()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return c
-	}
-
-	if c.value.MaxAge == 0 {
-		opChain.fail(AssertionFailure{
-			Type:   AssertValid,
-			Actual: &AssertionValue{c.value},
-			Errors: []error{
-				errors.New("expected: cookie has Max-Age field"),
-			},
-		})
-	}
-
-	return c
-}
+func (c *Cookie) ContainsMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // NotContainsMaxAge succeeds if cookie does not have Max-Age field.
 //
@@ -204,46 +114,19 @@ func (c *Cookie) ContainsMaxAge() *Cookie {
 //
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.NotContainsMaxAge()
-func (c *Cookie) NotContainsMaxAge() *Cookie {
-	opChain := c.chain.enter("NotContainsMaxAge()")
-	defer opChain.leave()
-
-	if opChain.failed() {
-		return c
-	}
-
-	if c.value.MaxAge != 0 {
-		opChain.fail(AssertionFailure{
-			Type:   AssertNotValid,
-			Actual: &AssertionValue{c.value},
-			Errors: []error{
-				errors.New("expected: cookie does not have Max-Age field"),
-			},
-		})
-	}
-
-	return c
-}
+func (c *Cookie) NotContainsMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use ContainsMaxAge instead.
-func (c *Cookie) HasMaxAge() *Cookie {
-	return c.ContainsMaxAge()
-}
+func (c *Cookie) HasMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NotContainsMaxAge instead.
-func (c *Cookie) NotHasMaxAge() *Cookie {
-	return c.NotContainsMaxAge()
-}
+func (c *Cookie) NotHasMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use ContainsMaxAge instead.
-func (c *Cookie) HaveMaxAge() *Cookie {
-	return c.ContainsMaxAge()
-}
+func (c *Cookie) HaveMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NotContainsMaxAge instead.
-func (c *Cookie) NotHaveMaxAge() *Cookie {
-	return c.NotContainsMaxAge()
-}
+func (c *Cookie) NotHaveMaxAge() *Cookie { _ = "STUB: not implemented"; return nil }
 
 // MaxAge returns a new Duration instance with cookie Max-Age field.
 //
@@ -257,26 +140,9 @@ func (c *Cookie) NotHaveMaxAge() *Cookie {
 //	cookie := NewCookie(t, &http.Cookie{...})
 //	cookie.ContainsMaxAge()
 //	cookie.MaxAge().InRange(time.Minute, time.Minute*10)
-func (c *Cookie) MaxAge() *Duration {
-	opChain := c.chain.enter("MaxAge()")
-	defer opChain.leave()
+func (c *Cookie) MaxAge() *Duration { _ = "STUB: not implemented"; return nil }
 
-	if opChain.failed() {
-		return newDuration(opChain, nil)
-	}
+// zero value means not present
+// TODO: after removing Duration.IsSet, add failure here (breaking change)
 
-	switch {
-	case c.value.MaxAge == 0: // zero value means not present
-		// TODO: after removing Duration.IsSet, add failure here (breaking change)
-		_ = (*Duration).IsSet
-		return newDuration(opChain, nil)
-
-	case c.value.MaxAge < 0: // negative value means present and zero
-		age := time.Duration(0)
-		return newDuration(opChain, &age)
-
-	default:
-		age := time.Duration(c.value.MaxAge) * time.Second
-		return newDuration(opChain, &age)
-	}
-}
+// negative value means present and zero

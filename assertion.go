@@ -245,45 +245,12 @@ type DefaultAssertionHandler struct {
 }
 
 // Success implements AssertionHandler.Success.
-func (h *DefaultAssertionHandler) Success(ctx *AssertionContext) {
-	if h.Formatter == nil {
-		panic("DefaultAssertionHandler.Formatter is nil")
-	}
-
-	if h.Logger == nil {
-		return
-	}
-
-	msg := h.Formatter.FormatSuccess(ctx)
-
-	h.Logger.Logf("%s", msg)
-}
+func (h *DefaultAssertionHandler) Success(ctx *AssertionContext) { _ = "STUB: not implemented"; return }
 
 // Failure implements AssertionHandler.Failure.
 func (h *DefaultAssertionHandler) Failure(
 	ctx *AssertionContext, failure *AssertionFailure,
 ) {
-	if h.Formatter == nil {
-		panic("DefaultAssertionHandler.Formatter is nil")
-	}
-
-	switch failure.Severity {
-	case SeverityError:
-		if h.Reporter == nil {
-			panic("DefaultAssertionHandler.Reporter is nil")
-		}
-
-		msg := h.Formatter.FormatFailure(ctx, failure)
-
-		h.Reporter.Errorf("%s", msg)
-
-	case SeverityLog:
-		if h.Logger == nil {
-			return
-		}
-
-		msg := h.Formatter.FormatFailure(ctx, failure)
-
-		h.Logger.Logf("%s", msg)
-	}
+	_ = "STUB: not implemented"
+	return
 }

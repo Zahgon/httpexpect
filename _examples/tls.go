@@ -1,14 +1,9 @@
 package examples
 
 import (
-	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"path"
-	"strconv"
 )
 
 /*
@@ -96,26 +91,10 @@ yaCpOxVFyMz6wFOdTdWBBR4MFNi/HsAcSGMvSIPM+PMYdFc0FmN3
 // In this example, it's used so that the server's certificates are trusted.
 // In real world use it's better to omit this in order to use the
 // default root set of the current operating system.
-func NewRootCertPool() *x509.CertPool {
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM([]byte(rootPEM))
-	if !ok {
-		panic("failed to parse root certificate")
-	}
-	return roots
-}
+func NewRootCertPool() *x509.CertPool { _ = "STUB: not implemented"; return nil }
 
 // ExampleTLSServer creates a httptest.Server with hardcoded key pair.
-func ExampleTLSServer() *httptest.Server {
-	cert, err := tls.X509KeyPair([]byte(certPEP), []byte(keyPEM))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	server := httptest.NewUnstartedServer(TLSHandler())
-	server.TLS = &tls.Config{Certificates: []tls.Certificate{cert}}
-	return server
-}
+func ExampleTLSServer() *httptest.Server { _ = "STUB: not implemented"; return nil }
 
 // TLSHandler creates http.Handler for tls server
 //
@@ -124,65 +103,4 @@ func ExampleTLSServer() *httptest.Server {
 //	GET /fruits           get item map
 //	GET /fruits/{name}    get item amount
 //	PUT /fruits/{name}    add or update fruit (amount in body)
-func TLSHandler() http.Handler {
-	items := map[string]int{}
-
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("/tls/", func(writer http.ResponseWriter, request *http.Request) {
-		_, name := path.Split(request.URL.Path)
-
-		switch request.Method {
-		case "PUT":
-			var data int
-			if err := json.NewDecoder(request.Body).Decode(&data); err != nil {
-				panic(err)
-			}
-			items[name] += data
-			writer.WriteHeader(http.StatusNoContent)
-
-		case "DELETE":
-			var data int
-			if err := json.NewDecoder(request.Body).Decode(&data); err != nil {
-				panic(err)
-			}
-			if _, ok := items[name]; ok {
-				items[name] -= data
-				writer.WriteHeader(http.StatusNoContent)
-			} else {
-				writer.WriteHeader(http.StatusNotFound)
-			}
-
-		case "GET":
-			if amount, ok := items[name]; ok {
-				_, err := writer.Write([]byte(strconv.Itoa(amount)))
-				if err != nil {
-					writer.WriteHeader(http.StatusServiceUnavailable)
-				}
-			} else {
-				writer.WriteHeader(http.StatusNotFound)
-			}
-
-		default:
-			writer.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	mux.HandleFunc("/tls", func(writer http.ResponseWriter, request *http.Request) {
-		switch request.Method {
-		case "GET":
-
-			all, err := json.Marshal(&items)
-			if err != nil {
-				panic(err)
-			}
-			writer.Header().Set("Content-Type", "application/json")
-			writer.Write(all)
-
-		default:
-			writer.WriteHeader(http.StatusBadRequest)
-		}
-	})
-
-	return mux
-}
+func TLSHandler() http.Handler { _ = "STUB: not implemented"; return *new(http.Handler) }

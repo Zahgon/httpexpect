@@ -224,62 +224,9 @@ type Config struct {
 	Environment *Environment
 }
 
-func (config Config) withDefaults() Config {
-	if config.RequestFactory == nil {
-		config.RequestFactory = DefaultRequestFactory{}
-	}
+func (config Config) withDefaults() Config { _ = "STUB: not implemented"; return *new(Config) }
 
-	if config.Client == nil {
-		config.Client = &http.Client{
-			Jar: NewCookieJar(),
-		}
-	}
-
-	if config.WebsocketDialer == nil {
-		config.WebsocketDialer = &websocket.Dialer{}
-	}
-
-	if config.AssertionHandler == nil {
-		if config.Formatter == nil {
-			config.Formatter = &DefaultFormatter{}
-		}
-
-		if config.Reporter == nil {
-			panic("either Config.Reporter or Config.AssertionHandler should be non-nil")
-		}
-
-		config.AssertionHandler = &DefaultAssertionHandler{
-			Formatter: config.Formatter,
-			Reporter:  config.Reporter,
-		}
-	}
-
-	return config
-}
-
-func (config *Config) validate() {
-	if config.RequestFactory == nil {
-		panic("Config.RequestFactory is nil")
-	}
-
-	if config.Client == nil {
-		panic("Config.Client is nil")
-	}
-
-	if config.AssertionHandler == nil {
-		panic("Config.AssertionHandler is nil")
-	}
-
-	if handler, ok := config.AssertionHandler.(*DefaultAssertionHandler); ok {
-		if handler.Formatter == nil {
-			panic("DefaultAssertionHandler.Formatter is nil")
-		}
-
-		if handler.Reporter == nil {
-			panic("DefaultAssertionHandler.Reporter is nil")
-		}
-	}
-}
+func (config *Config) validate() { _ = "STUB: not implemented"; return }
 
 // RequestFactory is used to create all http.Request objects.
 // aetest.Instance from the Google App Engine implements this interface.
@@ -305,22 +252,25 @@ type RequestFactoryFunc func(
 func (f RequestFactoryFunc) NewRequest(
 	method string, url string, body io.Reader,
 ) (*http.Request, error) {
-	return f(method, url, body)
+	_ = "STUB: not implemented"
+	return nil,
+
+		// Client is used to send http.Request and receive http.Response.
+		// http.Client implements this interface.
+		//
+		// Binder and FastBinder may be used to obtain this interface implementation.
+		//
+		// Example:
+		//
+		//	httpBinderClient := &http.Client{
+		//	  Transport: httpexpect.NewBinder(HTTPHandler),
+		//	}
+		//	fastBinderClient := &http.Client{
+		//	  Transport: httpexpect.NewFastBinder(FastHTTPHandler),
+		//	}
+		nil
 }
 
-// Client is used to send http.Request and receive http.Response.
-// http.Client implements this interface.
-//
-// Binder and FastBinder may be used to obtain this interface implementation.
-//
-// Example:
-//
-//	httpBinderClient := &http.Client{
-//	  Transport: httpexpect.NewBinder(HTTPHandler),
-//	}
-//	fastBinderClient := &http.Client{
-//	  Transport: httpexpect.NewFastBinder(FastHTTPHandler),
-//	}
 type Client interface {
 	// Do sends request and returns response.
 	Do(*http.Request) (*http.Response, error)
@@ -339,21 +289,23 @@ type Client interface {
 type ClientFunc func(req *http.Request) (*http.Response, error)
 
 func (f ClientFunc) Do(req *http.Request) (*http.Response, error) {
-	return f(req)
+	_ = "STUB: not implemented"
+
+	// WebsocketDialer is used to establish websocket.Conn and receive http.Response
+	// of handshake result.
+	// websocket.Dialer implements this interface.
+	//
+	// NewWebsocketDialer and NewFastWebsocketDialer may be used to obtain this
+	// interface implementation.
+	//
+	// Example:
+	//
+	//	e := httpexpect.WithConfig(httpexpect.Config{
+	//		WebsocketDialer: httpexpect.NewWebsocketDialer(myHandler),
+	//	})
+	return nil, nil
 }
 
-// WebsocketDialer is used to establish websocket.Conn and receive http.Response
-// of handshake result.
-// websocket.Dialer implements this interface.
-//
-// NewWebsocketDialer and NewFastWebsocketDialer may be used to obtain this
-// interface implementation.
-//
-// Example:
-//
-//	e := httpexpect.WithConfig(httpexpect.Config{
-//		WebsocketDialer: httpexpect.NewWebsocketDialer(myHandler),
-//	})
 type WebsocketDialer interface {
 	// Dial establishes new Websocket connection and returns response
 	// of handshake result.
@@ -378,11 +330,14 @@ type WebsocketDialerFunc func(
 func (f WebsocketDialerFunc) Dial(
 	url string, reqH http.Header,
 ) (*websocket.Conn, *http.Response, error) {
-	return f(url, reqH)
+	_ = "STUB: not implemented"
+	return nil,
+
+		// Reporter is used to report failures.
+		// *testing.T, FatalReporter, AssertReporter, RequireReporter, PanicReporter implement it.
+		nil, nil
 }
 
-// Reporter is used to report failures.
-// *testing.T, FatalReporter, AssertReporter, RequireReporter, PanicReporter implement it.
 type Reporter interface {
 	// Errorf reports failure.
 	// Allowed to return normally or terminate test using t.FailNow().
@@ -402,11 +357,13 @@ type Reporter interface {
 type ReporterFunc func(message string, args ...interface{})
 
 func (f ReporterFunc) Errorf(message string, args ...interface{}) {
-	f(message, args)
+	_ = "STUB: not implemented"
+
+	// Logger is used as output backend for Printer.
+	// *testing.T implements this interface.
+	return
 }
 
-// Logger is used as output backend for Printer.
-// *testing.T implements this interface.
 type Logger interface {
 	// Logf writes message to test log.
 	Logf(fmt string, args ...interface{})
@@ -428,11 +385,13 @@ type Logger interface {
 type LoggerFunc func(fmt string, args ...interface{})
 
 func (f LoggerFunc) Logf(fmt string, args ...interface{}) {
-	f(fmt, args)
+	_ = "STUB: not implemented"
+
+	// TestingTB is a subset of testing.TB interface used by httpexpect.
+	// You can use *testing.T or pass custom implementation.
+	return
 }
 
-// TestingTB is a subset of testing.TB interface used by httpexpect.
-// You can use *testing.T or pass custom implementation.
 type TestingTB interface {
 	Reporter
 	Logger
@@ -446,15 +405,7 @@ type LoggerReporter interface {
 }
 
 // Deprecated: use Default instead.
-func New(t LoggerReporter, baseURL string) *Expect {
-	return WithConfig(Config{
-		BaseURL:  baseURL,
-		Reporter: NewAssertReporter(t),
-		Printers: []Printer{
-			NewCompactPrinter(t),
-		},
-	})
-}
+func New(t LoggerReporter, baseURL string) *Expect { _ = "STUB: not implemented"; return nil }
 
 // Default returns a new Expect instance with default config.
 //
@@ -478,16 +429,7 @@ func New(t LoggerReporter, baseURL string) *Expect {
 //			Expect().
 //			Status(http.StatusOK)
 //	}
-func Default(t TestingTB, baseURL string) *Expect {
-	return WithConfig(Config{
-		TestName: t.Name(),
-		BaseURL:  baseURL,
-		Reporter: NewAssertReporter(t),
-		Printers: []Printer{
-			NewCompactPrinter(t),
-		},
-	})
-}
+func Default(t TestingTB, baseURL string) *Expect { _ = "STUB: not implemented"; return nil }
 
 // WithConfig returns a new Expect instance with custom config.
 //
@@ -515,16 +457,7 @@ func Default(t TestingTB, baseURL string) *Expect {
 //			Expect().
 //			Status(http.StatusOK)
 //	}
-func WithConfig(config Config) *Expect {
-	config = config.withDefaults()
-
-	config.validate()
-
-	return &Expect{
-		chain:  newChainWithConfig("", config),
-		config: config,
-	}
-}
+func WithConfig(config Config) *Expect { _ = "STUB: not implemented"; return nil }
 
 // Env returns Environment associated with Expect instance.
 // Tests can use it to store arbitrary data.
@@ -535,18 +468,9 @@ func WithConfig(config Config) *Expect {
 //
 //	e.Env().Put("key", "value")
 //	value := e.Env().GetString("key")
-func (e *Expect) Env() *Environment {
-	return e.chain.env()
-}
+func (e *Expect) Env() *Environment { _ = "STUB: not implemented"; return nil }
 
-func (e *Expect) clone() *Expect {
-	return &Expect{
-		config:   e.config,
-		chain:    e.chain.clone(),
-		builders: append(([]func(*Request))(nil), e.builders...),
-		matchers: append(([]func(*Response))(nil), e.matchers...),
-	}
-}
+func (e *Expect) clone() *Expect { _ = "STUB: not implemented"; return nil }
 
 // Builder returns a copy of Expect instance with given builder attached to it.
 // Returned copy contains all previously attached builders plus a new one.
@@ -567,12 +491,7 @@ func (e *Expect) clone() *Expect {
 //	auth.GET("/restricted").
 //	   Expect().
 //	   Status(http.StatusOK)
-func (e *Expect) Builder(builder func(*Request)) *Expect {
-	ret := e.clone()
-
-	ret.builders = append(ret.builders, builder)
-	return ret
-}
+func (e *Expect) Builder(builder func(*Request)) *Expect { _ = "STUB: not implemented"; return nil }
 
 // Matcher returns a copy of Expect instance with given matcher attached to it.
 // Returned copy contains all previously attached matchers plus a new one.
@@ -593,113 +512,76 @@ func (e *Expect) Builder(builder func(*Request)) *Expect {
 //	 m.GET("/bad-path").
 //			Expect().
 //			Status(http.StatusNotFound)
-func (e *Expect) Matcher(matcher func(*Response)) *Expect {
-	ret := e.clone()
-
-	ret.matchers = append(ret.matchers, matcher)
-	return ret
-}
+func (e *Expect) Matcher(matcher func(*Response)) *Expect { _ = "STUB: not implemented"; return nil }
 
 // Request returns a new Request instance.
 // Arguments are similar to NewRequest.
 // After creating request, all builders attached to Expect instance are invoked.
 // See Builder.
 func (e *Expect) Request(method, path string, pathargs ...interface{}) *Request {
-	opChain := e.chain.enter("Request(%q)", method)
-	defer opChain.leave()
-
-	req := newRequest(opChain, e.config, method, path, pathargs...)
-
-	for _, builder := range e.builders {
-		builder(req)
-	}
-
-	for _, matcher := range e.matchers {
-		req.WithMatcher(matcher)
-	}
-
-	return req
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // OPTIONS is a shorthand for e.Request("OPTIONS", path, pathargs...).
 func (e *Expect) OPTIONS(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodOptions, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // HEAD is a shorthand for e.Request("HEAD", path, pathargs...).
 func (e *Expect) HEAD(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodHead, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // GET is a shorthand for e.Request("GET", path, pathargs...).
 func (e *Expect) GET(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodGet, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // POST is a shorthand for e.Request("POST", path, pathargs...).
 func (e *Expect) POST(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodPost, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // PUT is a shorthand for e.Request("PUT", path, pathargs...).
 func (e *Expect) PUT(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodPut, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // PATCH is a shorthand for e.Request("PATCH", path, pathargs...).
 func (e *Expect) PATCH(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodPatch, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // DELETE is a shorthand for e.Request("DELETE", path, pathargs...).
 func (e *Expect) DELETE(path string, pathargs ...interface{}) *Request {
-	return e.Request(http.MethodDelete, path, pathargs...)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Deprecated: use NewValue or NewValueC instead.
-func (e *Expect) Value(value interface{}) *Value {
-	opChain := e.chain.enter("Value()")
-	defer opChain.leave()
-
-	return newValue(opChain, value)
-}
+func (e *Expect) Value(value interface{}) *Value { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NewObject or NewObjectC instead.
 func (e *Expect) Object(value map[string]interface{}) *Object {
-	opChain := e.chain.enter("Object()")
-	defer opChain.leave()
-
-	return newObject(opChain, value)
+	_ = "STUB: not implemented"
+	return nil
 }
 
 // Deprecated: use NewArray or NewArrayC instead.
-func (e *Expect) Array(value []interface{}) *Array {
-	opChain := e.chain.enter("Array()")
-	defer opChain.leave()
-
-	return newArray(opChain, value)
-}
+func (e *Expect) Array(value []interface{}) *Array { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NewString or NewStringC instead.
-func (e *Expect) String(value string) *String {
-	opChain := e.chain.enter("String()")
-	defer opChain.leave()
-
-	return newString(opChain, value)
-}
+func (e *Expect) String(value string) *String { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NewNumber or NewNumberC instead.
-func (e *Expect) Number(value float64) *Number {
-	opChain := e.chain.enter("Number()")
-	defer opChain.leave()
-
-	return newNumber(opChain, value)
-}
+func (e *Expect) Number(value float64) *Number { _ = "STUB: not implemented"; return nil }
 
 // Deprecated: use NewBoolean or NewBooleanC instead.
-func (e *Expect) Boolean(value bool) *Boolean {
-	opChain := e.chain.enter("Boolean()")
-	defer opChain.leave()
-
-	return newBoolean(opChain, value)
-}
+func (e *Expect) Boolean(value bool) *Boolean { _ = "STUB: not implemented"; return nil }

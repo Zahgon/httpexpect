@@ -3,9 +3,7 @@ package httpexpect
 import (
 	"bytes"
 	"context"
-	"errors"
 	"io"
-	"runtime"
 	"sync"
 )
 
@@ -65,228 +63,87 @@ type bodyWrapper struct {
 }
 
 func newBodyWrapper(reader io.ReadCloser, cancelFunc context.CancelFunc) *bodyWrapper {
-	bw := &bodyWrapper{
-		httpReader:     reader,
-		httpCancelFunc: cancelFunc,
-	}
-
-	// Finalizer will close body if closeAndCancel was never called.
-	runtime.SetFinalizer(bw, (*bodyWrapper).Close)
-
-	return bw
+	_ = "STUB: not implemented"
+	return nil
 }
+
+// Finalizer will close body if closeAndCancel was never called.
 
 // Read body contents.
-func (bw *bodyWrapper) Read(p []byte) (int, error) {
-	bw.mu.Lock()
-	defer bw.mu.Unlock()
+func (bw *bodyWrapper) Read(p []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-	bw.isReadBefore = true
+// Regular read from original HTTP response.
 
-	if bw.isRewindDisabled && !bw.isFullyRead {
-		// Regular read from original HTTP response.
-		return bw.httpReader.Read(p)
-	} else if !bw.isFullyRead {
-		// Read from original HTTP response + store into memory.
-		return bw.httpReadNext(p)
-	} else {
-		// Read from memory.
-		return bw.memReadNext(p)
-	}
-}
+// Read from original HTTP response + store into memory.
+
+// Read from memory.
 
 // Close body.
-func (bw *bodyWrapper) Close() error {
-	bw.mu.Lock()
-	defer bw.mu.Unlock()
+func (bw *bodyWrapper) Close() error { _ = "STUB: not implemented"; return nil }
 
-	// Preserve original reader error.
-	err := bw.closeErr
+// Preserve original reader error.
 
-	// Rewind or GetBody may be called later, so be sure to
-	// read body into memory before closing.
-	if !bw.isRewindDisabled && !bw.isFullyRead {
-		bw.isReadBefore = true
+// Rewind or GetBody may be called later, so be sure to
+// read body into memory before closing.
 
-		if readErr := bw.httpReadFull(); readErr != nil {
-			err = readErr
-		}
-	}
+// Close original reader.
 
-	// Close original reader.
-	closeErr := bw.closeAndCancel()
-	if closeErr != nil {
-		err = closeErr
-	}
+// Reset memory reader.
 
-	// Reset memory reader.
-	bw.memReader = bytes.NewReader(nil)
-
-	// Free memory when rewind is disabled.
-	if bw.isRewindDisabled {
-		bw.memBytes = nil
-	}
-
-	return err
-}
+// Free memory when rewind is disabled.
 
 // Rewind reading to the beginning.
-func (bw *bodyWrapper) Rewind() {
-	bw.mu.Lock()
-	defer bw.mu.Unlock()
+func (bw *bodyWrapper) Rewind() { _ = "STUB: not implemented"; return }
 
-	// Rewind is no-op if disabled.
-	if bw.isRewindDisabled {
-		return
-	}
+// Rewind is no-op if disabled.
 
-	// Rewind is no-op until first read operation.
-	if !bw.isReadBefore {
-		return
-	}
+// Rewind is no-op until first read operation.
 
-	// If HTTP response is not fully read yet, do it now.
-	// If error occurs, it will be reported next read operation.
-	if !bw.isFullyRead {
-		_ = bw.httpReadFull()
-	}
+// If HTTP response is not fully read yet, do it now.
+// If error occurs, it will be reported next read operation.
 
-	// Reset memory reader.
-	bw.memReader = bytes.NewReader(bw.memBytes)
-}
+// Reset memory reader.
 
 // Create new reader to retrieve body contents.
 // New reader always reads body from the beginning.
 // Does not affected by Rewind().
 func (bw *bodyWrapper) GetBody() (io.ReadCloser, error) {
-	bw.mu.Lock()
-	defer bw.mu.Unlock()
-
-	bw.isReadBefore = true
-
-	// Preserve original reader error.
-	if bw.readErr != nil {
-		return nil, bw.readErr
-	}
-
-	// GetBody() requires rewinds to be enabled.
-	if bw.isRewindDisabled {
-		return nil, errors.New("rewinds are disabled, cannot get body")
-	}
-
-	// If HTTP response is not fully read yet, do it now.
-	if !bw.isFullyRead {
-		if err := bw.httpReadFull(); err != nil {
-			return nil, err
-		}
-	}
-
-	// Return fresh reader for memory chunk.
-	return io.NopCloser(bytes.NewReader(bw.memBytes)), nil
+	_ = "STUB: not implemented"
+	return *new(io.ReadCloser), nil
 }
+
+// Preserve original reader error.
+
+// GetBody() requires rewinds to be enabled.
+
+// If HTTP response is not fully read yet, do it now.
+
+// Return fresh reader for memory chunk.
 
 // Disables storing body contents in memory and clears the cache.
-func (bw *bodyWrapper) DisableRewinds() {
-	bw.mu.Lock()
-	defer bw.mu.Unlock()
+func (bw *bodyWrapper) DisableRewinds() { _ = "STUB: not implemented"; return }
 
-	// Free memory if reading from original HTTP response, or reading from memory
-	// and memory reader has nothing left to read.
-	// Otherwise, i.e. when we're reading from memory, and there is more to read,
-	// memReadNext() will free memory later when it hits EOF.
-	if !bw.isFullyRead || bw.memReader.Len() == 0 {
-		bw.memReader = bytes.NewReader(nil)
-		bw.memBytes = nil
-	}
+// Free memory if reading from original HTTP response, or reading from memory
+// and memory reader has nothing left to read.
+// Otherwise, i.e. when we're reading from memory, and there is more to read,
+// memReadNext() will free memory later when it hits EOF.
 
-	bw.isRewindDisabled = true
-}
+func (bw *bodyWrapper) memReadNext(p []byte) (int, error) { _ = "STUB: not implemented"; return 0, nil }
 
-func (bw *bodyWrapper) memReadNext(p []byte) (int, error) {
-	n, err := bw.memReader.Read(p)
-
-	if err == io.EOF {
-		// Free memory after we hit EOF when reading from memory,
-		// if rewinds were disabled while we were reading from it.
-		if bw.isRewindDisabled {
-			bw.memReader = bytes.NewReader(nil)
-			bw.memBytes = nil
-		}
-		if bw.readErr != nil {
-			err = bw.readErr
-		}
-	}
-
-	return n, err
-}
+// Free memory after we hit EOF when reading from memory,
+// if rewinds were disabled while we were reading from it.
 
 func (bw *bodyWrapper) httpReadNext(p []byte) (int, error) {
-	n, err := bw.httpReader.Read(p)
-
-	if n > 0 {
-		bw.memBytes = append(bw.memBytes, p[:n]...)
-	}
-
-	if err != nil {
-		if err != io.EOF {
-			bw.readErr = err
-		}
-		if closeErr := bw.closeAndCancel(); closeErr != nil && err == io.EOF {
-			err = closeErr
-		}
-
-		// Switch to reading from memory.
-		bw.isFullyRead = true
-		bw.memReader = bytes.NewReader(nil)
-	}
-
-	return n, err
+	_ = "STUB: not implemented"
+	return 0, nil
 }
 
-func (bw *bodyWrapper) httpReadFull() error {
-	b, err := io.ReadAll(bw.httpReader)
+// Switch to reading from memory.
 
-	// Switch to reading from memory.
-	bw.isFullyRead = true
-	bw.memBytes = append(bw.memBytes, b...)
-	bw.memReader = bytes.NewReader(bw.memBytes[len(bw.memBytes)-len(b):])
+func (bw *bodyWrapper) httpReadFull() error { _ = "STUB: not implemented"; return nil }
 
-	if err != nil {
-		bw.readErr = err
-	}
+// Switch to reading from memory.
 
-	if closeErr := bw.closeAndCancel(); closeErr != nil && err == nil {
-		err = closeErr
-	}
+func (bw *bodyWrapper) closeAndCancel() error { _ = "STUB: not implemented"; return nil }
 
-	return err
-}
-
-func (bw *bodyWrapper) closeAndCancel() error {
-	if bw.httpReader == nil && bw.httpCancelFunc == nil {
-		return bw.closeErr
-	}
-
-	if bw.httpReader != nil {
-		err := bw.httpReader.Close()
-		bw.httpReader = nil
-
-		if bw.readErr == nil {
-			bw.readErr = err
-		}
-
-		if bw.closeErr == nil {
-			bw.closeErr = err
-		}
-	}
-
-	if bw.httpCancelFunc != nil {
-		bw.httpCancelFunc()
-		bw.httpCancelFunc = nil
-	}
-
-	// Finalizer is not needed anymore.
-	runtime.SetFinalizer(bw, nil)
-
-	return bw.closeErr
-}
+// Finalizer is not needed anymore.

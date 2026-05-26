@@ -13,5 +13,6 @@ type DefaultRequestFactory struct{}
 func (DefaultRequestFactory) NewRequest(
 	method, url string, body io.Reader,
 ) (*http.Request, error) {
-	return http.NewRequest(method, url, body)
+	_ = "STUB: not implemented"
+	return nil, nil
 }
